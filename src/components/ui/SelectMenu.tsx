@@ -96,10 +96,16 @@ export function SelectMenu({
     };
   }, [open]);
 
+  // Vira para cima quando não há espaço abaixo (ex.: trigger no rodapé da
+  // sidebar) e limita a altura à viewport (rola se preciso).
+  const flipUp = rect ? rect.bottom > window.innerHeight - 260 : false;
   const panelStyle: CSSProperties | undefined = rect
     ? {
         position: "fixed",
-        top: rect.bottom + 4,
+        maxHeight: (flipUp ? rect.top : window.innerHeight - rect.bottom) - 12,
+        ...(flipUp
+          ? { bottom: window.innerHeight - rect.top + 4 }
+          : { top: rect.bottom + 4 }),
         ...(align === "end"
           ? { right: window.innerWidth - rect.right }
           : { left: rect.left }),

@@ -4,7 +4,7 @@
  */
 export default function Loading() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-5 py-8">
+    <div className="mx-auto flex w-full max-w-screen-2xl flex-1 flex-col gap-6 px-6 py-8">
       <div className="flex flex-col gap-3">
         <div className="bg-surface-2 h-7 w-40 animate-pulse rounded-md" />
         <div className="bg-surface-2 h-4 w-56 animate-pulse rounded-md" />

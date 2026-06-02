@@ -51,7 +51,7 @@ export default async function TasksPage({
         : "Nenhuma marca em escopo para esta sessão.";
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-5 py-8">
+    <div className="mx-auto flex w-full max-w-screen-2xl flex-1 flex-col gap-6 px-6 py-8">
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="flex flex-col gap-0.5">

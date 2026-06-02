@@ -37,12 +37,9 @@ test("busca filtra a lista", async ({ page }) => {
 
 test("trocar de marca muda o contexto", async ({ page }) => {
   await page.goto("/tasks", { waitUntil: "networkidle" });
-  // O onChange do <select> só funciona após hidratar (componente client).
-  await expect(page.getByRole("heading", { name: "Tarefas" })).toBeVisible();
-  await page.waitForTimeout(500);
-  await page
-    .getByRole("combobox", { name: "Marca ativa" })
-    .selectOption("animale");
+  // No desktop a navegação de marca é pela sidebar (links reais, sem corrida
+  // de hidratação).
+  await page.getByRole("link", { name: "Animale" }).click();
   await expect(page.getByText("Trabalho da marca Animale.")).toBeVisible();
 });
 
@@ -64,7 +61,8 @@ test("alternar tema muda o data-theme do <html>", async ({ page }) => {
   const before = await html.getAttribute("data-theme");
   const next = before === "dark" ? "light" : "dark";
   const optionName = next === "dark" ? "Escuro" : "Claro";
-  await page.getByRole("button", { name: /Tema:/ }).click();
+  // Há um ThemeToggle na sidebar (desktop) e outro no top bar mobile; usa o 1º.
+  await page.getByRole("button", { name: /Tema:/ }).first().click();
   await page.getByRole("option", { name: optionName }).click();
   await expect(html).toHaveAttribute("data-theme", next);
 });

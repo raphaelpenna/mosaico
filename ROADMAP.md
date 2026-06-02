@@ -10,6 +10,42 @@ até a troca pelo backend real.
 
 ---
 
+## Norte do produto — PRD v1.0 (evolução "Notion-like")
+
+A partir de 2026-06, o produto evolui de gerenciador de tarefas para **gestão de
+trabalho escopada por marca** (cada marca = workspace), no estilo Notion. As
+Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2**.
+
+> ⚠️ **Mudança de invariante:** o Admin v1 (P0) torna **marcas/labels/campos/
+> status editáveis** — supersede o invariante "marca é identidade estática". A
+> taxonomia/labels migrarão de config no código para um store mutável (mock)
+> quando o Admin for implementado. Confirmar antes de mexer.
+
+**P0 — Fundação** (destrava a evolução; tudo verificável no mock)
+
+- 🟡 **Layout desktop de 3 zonas** — ✅ sidebar esquerda recolhível (marcas + visões) + centro em largura total (`Sidebar`, top bar só no mobile); ⬜ painel direito contextual (detalhe da tarefa em split view) e largura de leitura p/ documentos.
+- ⬜ **Tarefa como página** — editor de blocos (texto rico, títulos, checklists, toggles, tabela, imagens) + **propriedades tipadas** (seleção/multi, número, moeda, data início-fim, URL, pessoa, relação). Quick-add mantido.
+- ⬜ **Admin v1** — CRUD de marcas/workspaces, labels, campos customizados, status e prioridades (exige store mutável — ver invariante acima).
+
+**P1 — Paridade de uso** (Notion no dia a dia)
+
+- ⬜ Visões **Calendário** e **Tabela**; estado por visão (parcial: filtros/visão já persistem na URL).
+- 🟡 Agrupamentos — status/prioridade/responsável/marca ✅; ⬜ por label, por prazo (Hoje/Semana/Mês/Atrasadas), por campo customizado, **aninhado + swimlanes**.
+- 🟡 **Subtarefas/checklists** (básico ✅; falta progresso pai-filho), ⬜ **comentários + @menções**, ⬜ **templates de tarefa**, ⬜ capa/ícone.
+- ⬜ Admin v2 — usuários e atribuição a marcas; preferências padrão.
+
+**P2 — Profundidade & diferenciação**
+
+- ⬜ **Base de conhecimento por marca + Minhas notas** (mesmo editor de blocos, link bidirecional tarefa↔documento).
+- ⬜ Visões **Timeline/Gantt**, **Galeria**, **Carga de trabalho**.
+- ⬜ **Fórmulas, rollups e relações**.
+- ⬜ Integrações: **Slack** + **dados Azzas/BigQuery**.
+
+**Fora de escopo (PRD):** SSO/provisionamento, RBAC granular, auditoria/versões,
+tempo real, export/backup, SLA.
+
+---
+
 ## Fase 1 — Starter (✅ concluída)
 
 Base da arquitetura e a primeira superfície de trabalho.
