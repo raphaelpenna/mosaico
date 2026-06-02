@@ -19,6 +19,10 @@ export interface TaskBoardCtx {
   selected: Set<string>;
   toggleSelect: (id: string) => void;
   selecting: boolean;
+  /** painel direito de detalhe (split view): id da tarefa aberta */
+  openId: string | null;
+  openTask: (id: string) => void;
+  closeTask: () => void;
 }
 
 const Ctx = createContext<TaskBoardCtx | null>(null);

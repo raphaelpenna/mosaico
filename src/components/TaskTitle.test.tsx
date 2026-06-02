@@ -14,6 +14,9 @@ function renderTitle() {
     selected: new Set(),
     toggleSelect: vi.fn(),
     selecting: false,
+    openId: null,
+    openTask: vi.fn(),
+    closeTask: vi.fn(),
   };
   render(
     <TaskBoardProvider value={ctx}>

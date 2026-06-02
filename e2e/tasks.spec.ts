@@ -96,6 +96,18 @@ test("filtros persistem na URL e sobrevivem ao reload", async ({ page }) => {
   ).toHaveCount(0);
 });
 
+test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
+  const panel = page.getByRole("dialog");
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText("Prioridade")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
 test("Kanban: arrastar um card para outra coluna muda o status", async ({
   page,
 }) => {

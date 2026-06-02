@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { Task, TaskStatus } from "@/types";
 import { useTaskBoard } from "./task-board-context";
 import { TaskTitle } from "./TaskTitle";
@@ -8,7 +7,6 @@ import { PriorityPicker } from "./PriorityPicker";
 import { DuePicker } from "./DuePicker";
 import { AssigneePicker } from "./AssigneePicker";
 import { LabelChips } from "./LabelChips";
-import { TaskDetail } from "./TaskDetail";
 
 // Clicar no controle avanca o workflow: a fazer -> fazendo -> feito -> (reabre).
 const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
@@ -58,10 +56,18 @@ export function TaskCard({
   task: Task;
   draggable?: boolean;
 }) {
-  const { mutate, remove, selected, toggleSelect, selecting } = useTaskBoard();
-  const [open, setOpen] = useState(false);
+  const {
+    mutate,
+    remove,
+    selected,
+    toggleSelect,
+    selecting,
+    openTask,
+    openId,
+  } = useTaskBoard();
   const done = task.status === "done";
   const isSelected = selected.has(task.id);
+  const isOpen = openId === task.id;
   const subDone = task.subtasks.filter((s) => s.done).length;
 
   return (
@@ -80,7 +86,9 @@ export function TaskCard({
       } ${
         isSelected
           ? "border-accent ring-accent/30 ring-1"
-          : "border-border hover:border-border-strong"
+          : isOpen
+            ? "border-accent"
+            : "border-border hover:border-border-strong"
       }`}
     >
       <div className="flex items-start gap-2 px-3 py-2.5 sm:items-center">
@@ -144,16 +152,13 @@ export function TaskCard({
 
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-label={open ? "Recolher detalhes" : "Expandir detalhes"}
-          className="text-faint hover:bg-surface-2 hover:text-fg flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors"
+          onClick={() => openTask(task.id)}
+          aria-label="Abrir detalhes"
+          className={`hover:bg-surface-2 hover:text-fg flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors ${
+            isOpen ? "text-fg bg-surface-2" : "text-faint"
+          }`}
         >
-          <svg
-            viewBox="0 0 16 16"
-            className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`}
-            aria-hidden
-          >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
             <path
               d="M6 4l4 4-4 4"
               fill="none"
@@ -183,8 +188,6 @@ export function TaskCard({
           </svg>
         </button>
       </div>
-
-      {open && <TaskDetail task={task} />}
     </li>
   );
 }

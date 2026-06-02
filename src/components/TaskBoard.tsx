@@ -21,6 +21,7 @@ import {
   type GroupBy,
 } from "@/lib/tasks/board";
 import { TaskCard } from "./TaskCard";
+import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
 import {
@@ -103,6 +104,7 @@ export function TaskBoard({
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(
     null,
   );
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // ---- mutações otimistas --------------------------------------------------
   function mutate(id: string, patch: TaskPatch) {
@@ -222,7 +224,12 @@ export function TaskBoard({
     selected,
     toggleSelect,
     selecting: selected.size > 0,
+    openId,
+    openTask: (id: string) => setOpenId(id),
+    closeTask: () => setOpenId(null),
   };
+
+  const openTask = openId ? optimistic.find((t) => t.id === openId) : null;
 
   const groupByOptions: { value: GroupBy; label: string }[] = [
     { value: "status", label: "Status" },
@@ -494,6 +501,7 @@ export function TaskBoard({
           </div>
         </div>
       )}
+      {openTask && <TaskPanel task={openTask} />}
     </TaskBoardProvider>
   );
 }
