@@ -108,6 +108,14 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("visão Calendário renderiza a grade do mês", async ({ page }) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Calendário" }).click();
+  await expect(page.getByText("Dom", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Hoje" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Próximo mês" })).toBeVisible();
+});
+
 test("visão Tabela mostra colunas, incluindo campo customizado", async ({
   page,
 }) => {

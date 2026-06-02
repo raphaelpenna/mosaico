@@ -28,6 +28,7 @@ import {
 } from "@/lib/tasks/board";
 import { TaskCard } from "./TaskCard";
 import { TaskTable } from "./TaskTable";
+import { CalendarView } from "./CalendarView";
 import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
@@ -79,10 +80,12 @@ export function TaskBoard({
   const [groupBy, setGroupBy] = useState<GroupBy>(
     () => (params.get("group") as GroupBy) || defaultGroup,
   );
-  const [view, setView] = useState<"list" | "board" | "table">(() => {
-    const v = params.get("view");
-    return v === "board" || v === "table" ? v : "list";
-  });
+  const [view, setView] = useState<"list" | "board" | "table" | "calendar">(
+    () => {
+      const v = params.get("view");
+      return v === "board" || v === "table" || v === "calendar" ? v : "list";
+    },
+  );
 
   // Sincroniza filtros/visão na URL SEM re-render do servidor (history, não
   // router) — assim o link é compartilhável mas a página (RSC) não re-roda a
@@ -197,7 +200,13 @@ export function TaskBoard({
   useEffect(() => {
     const onToggleView = () =>
       setView((v) =>
-        v === "list" ? "board" : v === "board" ? "table" : "list",
+        v === "list"
+          ? "board"
+          : v === "board"
+            ? "table"
+            : v === "table"
+              ? "calendar"
+              : "list",
       );
     const onClear = () => {
       setQuery("");
@@ -361,6 +370,11 @@ export function TaskBoard({
               onClick={() => setView("table")}
               label="Tabela"
             />
+            <ViewButton
+              on={view === "calendar"}
+              onClick={() => setView("calendar")}
+              label="Calendário"
+            />
           </div>
         </div>
 
@@ -418,6 +432,8 @@ export function TaskBoard({
           <BoardView tasks={filtered} />
         ) : view === "table" ? (
           <TaskTable tasks={filtered} />
+        ) : view === "calendar" ? (
+          <CalendarView tasks={filtered} />
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (
