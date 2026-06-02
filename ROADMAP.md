@@ -37,9 +37,9 @@ do valor percebido. **Concluída** (port refatorado para uma mutação única
 - ✅ **Responsável (assignee)** — catálogo mock (`lib/people`), avatar + seletor na linha.
 - ✅ **Labels/tags** por tarefa — catálogo mock (`lib/labels`), chips na linha + editor no detalhe.
 - ✅ **Descrição curta + checklist** de subtarefas — no painel de detalhe expansível.
-- ✅ **Busca, filtros e ordenação** — busca por título; filtros por prioridade, responsável e label; **agrupar por** status/prioridade/responsável/marca; ordenação por prioridade+prazo.
-- ✅ **Visão Kanban** (colunas por status) com alternância Lista/Quadro.
-- ✅ **Visão "Todas as marcas"** consolidada (`?brand=all`), agrupando por marca.
+- ✅ **Busca, filtros e ordenação** — busca por título; filtros por prioridade, responsável e label; **agrupar por** status/prioridade/responsável/marca; ordenação por prioridade+prazo. **Filtros/visão persistidos na URL** (`?q=&priority=&assignee=&label=&group=&view=`) via `history.replaceState` — links compartilháveis, sem re-render do servidor.
+- ✅ **Visão Kanban** (colunas por status) com alternância Lista/Quadro e **drag-and-drop** (arrastar entre colunas muda o status; DnD nativo HTML5, sem deps).
+- ✅ **Visão "Todas as marcas"** (`?brand=all`) e **"Minhas tarefas"** (`?brand=mine`, atribuídas ao usuário entre marcas) — consolidadas, agrupando por marca.
 - ✅ **Optimistic UI** (`useOptimistic`) — toda mutação reflete na hora.
 - ✅ **Desfazer (undo)** — toast com "desfazer" no remover (individual e em lote).
 - ✅ **Ações em lote** (seleção múltipla: marcar feito, prioridade, responsável, remover).

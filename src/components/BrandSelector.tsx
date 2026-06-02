@@ -48,6 +48,7 @@ export function BrandSelector({
           </option>
         ))}
         <option value="all">Todas as marcas</option>
+        <option value="mine">Minhas tarefas</option>
       </select>
       <svg
         aria-hidden

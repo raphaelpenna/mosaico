@@ -11,23 +11,27 @@ export default async function TasksPage({
   searchParams: Promise<{ brand?: string }>;
 }) {
   // Tudo no servidor: sessao -> escopo -> marca ativa -> port de tarefas.
-  const { scope } = await getSession();
+  const { user, scope } = await getSession();
   const brands = scopedBrands(scope);
   const brandIds = brands.map((b) => b.id);
   const { brand } = await searchParams;
 
-  // "all" = visão consolidada de todas as marcas em escopo. Caso contrário, a
-  // marca ativa vem de ?brand= revalidada, com fallback na primeira em escopo.
+  // Visoes consolidadas (todas as marcas): "all" = tudo; "mine" = atribuidas a
+  // mim. Caso contrario, marca ativa de ?brand= revalidada, com fallback na
+  // primeira em escopo.
   const allView = brand === "all";
-  const activeBrand = allView
+  const mineView = brand === "mine";
+  const consolidated = allView || mineView;
+  const activeBrand = consolidated
     ? null
     : (resolveScopedBrand(scope, brand) ?? brands[0]);
 
-  const tasks = allView
+  let tasks = consolidated
     ? await getTaskSource().listTasks(scope)
     : activeBrand
       ? await getTaskSource().listTasks(scope, activeBrand.id)
       : [];
+  if (mineView) tasks = tasks.filter((t) => t.assigneeId === user.id);
 
   const count = (s: TaskStatus) => tasks.filter((t) => t.status === s).length;
   const done = count("done");
@@ -38,19 +42,23 @@ export default async function TasksPage({
   // marcacao de prazo (atrasado/hoje) bater no SSR e no client.
   const today = new Date().toISOString().slice(0, 10);
 
+  const subtitle = mineView
+    ? "Suas tarefas, em todas as marcas em escopo."
+    : allView
+      ? "Trabalho de todas as marcas em escopo."
+      : activeBrand
+        ? `Trabalho da marca ${activeBrand.name}.`
+        : "Nenhuma marca em escopo para esta sessão.";
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-5 py-8">
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-2xl font-semibold tracking-tight">Tarefas</h1>
-            <p className="text-muted text-sm">
-              {allView
-                ? "Trabalho de todas as marcas em escopo."
-                : activeBrand
-                  ? `Trabalho da marca ${activeBrand.name}.`
-                  : "Nenhuma marca em escopo para esta sessão."}
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {mineView ? "Minhas tarefas" : "Tarefas"}
+            </h1>
+            <p className="text-muted text-sm">{subtitle}</p>
           </div>
           {total > 0 && (
             <span className="text-muted text-sm tabular-nums">
@@ -76,11 +84,11 @@ export default async function TasksPage({
         )}
       </header>
 
-      {!allView && activeBrand && <AddTask brandId={activeBrand.id} />}
+      {!consolidated && activeBrand && <AddTask brandId={activeBrand.id} />}
       <TaskBoard
         tasks={tasks}
         today={today}
-        groupByBrand={allView}
+        groupByBrand={consolidated}
         brandIds={brandIds}
       />
     </div>

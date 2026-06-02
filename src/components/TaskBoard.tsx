@@ -7,7 +7,8 @@ import {
   useOptimistic,
   useState,
 } from "react";
-import type { Task, TaskPatch, TaskPriority } from "@/types";
+import { useSearchParams } from "next/navigation";
+import type { Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
 import { PEOPLE } from "@/lib/people";
 import { LABELS } from "@/lib/labels";
 import {
@@ -20,7 +21,7 @@ import {
   type GroupBy,
 } from "@/lib/tasks/board";
 import { TaskCard } from "./TaskCard";
-import { TaskBoardProvider } from "./task-board-context";
+import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
 import {
   bulkDeleteAction,
@@ -45,16 +46,59 @@ export function TaskBoard({
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
-  const [query, setQuery] = useState("");
+  // Estado inicial dos filtros/visão vem da URL (links compartilháveis / reload).
+  const params = useSearchParams();
+  const defaultGroup: GroupBy = groupByBrand ? "brand" : "status";
+  const [query, setQuery] = useState(() => params.get("q") ?? "");
   const [priorityFilter, setPriorityFilter] = useState<Set<TaskPriority>>(
-    new Set(),
+    () =>
+      new Set(
+        (params.get("priority") ?? "")
+          .split(",")
+          .filter(Boolean) as TaskPriority[],
+      ),
   );
-  const [assigneeFilter, setAssigneeFilter] = useState("");
-  const [labelFilter, setLabelFilter] = useState("");
+  const [assigneeFilter, setAssigneeFilter] = useState(
+    () => params.get("assignee") ?? "",
+  );
+  const [labelFilter, setLabelFilter] = useState(
+    () => params.get("label") ?? "",
+  );
   const [groupBy, setGroupBy] = useState<GroupBy>(
-    groupByBrand ? "brand" : "status",
+    () => (params.get("group") as GroupBy) || defaultGroup,
   );
-  const [view, setView] = useState<"list" | "board">("list");
+  const [view, setView] = useState<"list" | "board">(() =>
+    params.get("view") === "board" ? "board" : "list",
+  );
+
+  // Sincroniza filtros/visão na URL SEM re-render do servidor (history, não
+  // router) — assim o link é compartilhável mas a página (RSC) não re-roda a
+  // cada tecla. `brand` é preservado (ele sim controla os dados no servidor).
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const set = (k: string, v: string, keep: boolean) =>
+      keep ? p.set(k, v) : p.delete(k);
+    set("q", query, query.trim() !== "");
+    set("priority", [...priorityFilter].join(","), priorityFilter.size > 0);
+    set("assignee", assigneeFilter, assigneeFilter !== "");
+    set("label", labelFilter, labelFilter !== "");
+    set("group", groupBy, groupBy !== defaultGroup);
+    set("view", view, view !== "list");
+    const qs = p.toString();
+    window.history.replaceState(
+      null,
+      "",
+      qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+    );
+  }, [
+    query,
+    priorityFilter,
+    assigneeFilter,
+    labelFilter,
+    groupBy,
+    view,
+    defaultGroup,
+  ]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(
     null,
@@ -518,8 +562,15 @@ function ViewButton({
   );
 }
 
-/** Visão de quadro: colunas por status (rolagem horizontal). */
+/**
+ * Visão de quadro: colunas por status (rolagem horizontal). Arrastar um card
+ * para outra coluna muda o status (HTML5 DnD nativo, sem dependência). A coluna
+ * destacada indica o alvo do drop.
+ */
 function BoardView({ tasks }: { tasks: Task[] }) {
+  const { mutate } = useTaskBoard();
+  const [over, setOver] = useState<TaskStatus | null>(null);
+
   return (
     <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
       {STATUS_GROUPS.map((g) => {
@@ -534,9 +585,33 @@ function BoardView({ tasks }: { tasks: Task[] }) {
                 {items.length}
               </span>
             </header>
-            <ul className="bg-surface-2/40 flex min-h-12 flex-col gap-1.5 rounded-xl p-1.5">
+            <ul
+              data-status={g.key}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (over !== g.key) setOver(g.key);
+              }}
+              onDragLeave={(e) => {
+                // só limpa se saiu de fato da coluna (não ao passar por filhos)
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setOver((o) => (o === g.key ? null : o));
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData("text/plain");
+                setOver(null);
+                if (id) mutate(id, { status: g.key });
+              }}
+              className={`flex min-h-16 flex-col gap-1.5 rounded-xl p-1.5 transition-colors ${
+                over === g.key
+                  ? "bg-accent-soft ring-accent/40 ring-1"
+                  : "bg-surface-2/40"
+              }`}
+            >
               {items.map((task) => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard key={task.id} task={task} draggable />
               ))}
             </ul>
           </section>

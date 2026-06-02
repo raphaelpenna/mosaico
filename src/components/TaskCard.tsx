@@ -51,7 +51,13 @@ function StatusControl({ status }: { status: TaskStatus }) {
   );
 }
 
-export function TaskCard({ task }: { task: Task }) {
+export function TaskCard({
+  task,
+  draggable = false,
+}: {
+  task: Task;
+  draggable?: boolean;
+}) {
   const { mutate, remove, selected, toggleSelect, selecting } = useTaskBoard();
   const [open, setOpen] = useState(false);
   const done = task.status === "done";
@@ -60,7 +66,18 @@ export function TaskCard({ task }: { task: Task }) {
 
   return (
     <li
+      draggable={draggable}
+      onDragStart={
+        draggable
+          ? (e) => {
+              e.dataTransfer.setData("text/plain", task.id);
+              e.dataTransfer.effectAllowed = "move";
+            }
+          : undefined
+      }
       className={`group bg-surface rounded-xl border transition-colors ${
+        draggable ? "cursor-grab active:cursor-grabbing" : ""
+      } ${
         isSelected
           ? "border-accent ring-accent/30 ring-1"
           : "border-border hover:border-border-strong"

@@ -14,6 +14,11 @@ vi.mock("@/app/(work)/tasks/actions", () => ({
   bulkDeleteAction: vi.fn(),
 }));
 
+// useSearchParams precisa do contexto do App Router (ausente fora do Next).
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 import { TaskBoard } from "./TaskBoard";
 
 function task(over: Partial<Task>): Task {

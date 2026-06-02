@@ -73,6 +73,7 @@ export function CommandPalette({ brands }: { brands: Brand[] }) {
         },
       },
       { id: "all", label: "Ver todas as marcas", run: go("all") },
+      { id: "mine", label: "Ver minhas tarefas", run: go("mine") },
       ...brands.map((b) => ({
         id: `brand-${b.id}`,
         label: `Ir para ${b.name}`,
