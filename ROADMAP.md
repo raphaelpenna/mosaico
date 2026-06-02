@@ -28,7 +28,7 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 
 **P1 — Paridade de uso** (Notion no dia a dia)
 
-- ⬜ Visões **Calendário** e **Tabela**; estado por visão (parcial: filtros/visão já persistem na URL).
+- 🟡 Visões: ✅ **Tabela** (base-de-dados — linhas/colunas com os campos núcleo editáveis inline + campos customizados globais como colunas; toggle Lista/Quadro/Tabela). ⬜ **Calendário** (por prazo). Estado por visão já persiste na URL.
 - 🟡 Agrupamentos — status/prioridade/responsável/marca ✅; ⬜ por label, por prazo (Hoje/Semana/Mês/Atrasadas), por campo customizado, **aninhado + swimlanes**.
 - 🟡 **Subtarefas/checklists** (básico ✅; falta progresso pai-filho), ⬜ **comentários + @menções**, ⬜ **templates de tarefa**, ⬜ capa/ícone.
 - ⬜ Admin v2 — usuários e atribuição a marcas; preferências padrão.

@@ -1,53 +1,13 @@
 "use client";
 
-import type { Task, TaskStatus } from "@/types";
+import type { Task } from "@/types";
 import { useTaskBoard } from "./task-board-context";
 import { TaskTitle } from "./TaskTitle";
 import { PriorityPicker } from "./PriorityPicker";
 import { DuePicker } from "./DuePicker";
 import { AssigneePicker } from "./AssigneePicker";
 import { LabelChips } from "./LabelChips";
-
-// Clicar no controle avanca o workflow: a fazer -> fazendo -> feito -> (reabre).
-const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
-  todo: "doing",
-  doing: "done",
-  done: "todo",
-};
-const ADVANCE_LABEL: Record<TaskStatus, string> = {
-  todo: "Marcar como fazendo",
-  doing: "Marcar como feito",
-  done: "Reabrir tarefa",
-};
-
-function StatusControl({ status }: { status: TaskStatus }) {
-  if (status === "done") {
-    return (
-      <span className="bg-done flex h-[18px] w-[18px] items-center justify-center rounded-full">
-        <svg viewBox="0 0 16 16" className="h-3 w-3 text-white" aria-hidden>
-          <path
-            d="M4 8.5l2.5 2.5L12 5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    );
-  }
-  if (status === "doing") {
-    return (
-      <span className="border-doing flex h-[18px] w-[18px] items-center justify-center rounded-full border-2">
-        <span className="bg-doing h-2 w-2 rounded-full" />
-      </span>
-    );
-  }
-  return (
-    <span className="border-faint group-hover:border-fg h-[18px] w-[18px] rounded-full border-2 transition-colors" />
-  );
-}
+import { StatusButton } from "./StatusButton";
 
 export function TaskCard({
   task,
@@ -56,15 +16,8 @@ export function TaskCard({
   task: Task;
   draggable?: boolean;
 }) {
-  const {
-    mutate,
-    remove,
-    selected,
-    toggleSelect,
-    selecting,
-    openTask,
-    openId,
-  } = useTaskBoard();
+  const { remove, selected, toggleSelect, selecting, openTask, openId } =
+    useTaskBoard();
   const done = task.status === "done";
   const isSelected = selected.has(task.id);
   const isOpen = openId === task.id;
@@ -116,16 +69,7 @@ export function TaskCard({
           </svg>
         </button>
 
-        {/* Avancar status */}
-        <button
-          type="button"
-          onClick={() => mutate(task.id, { status: NEXT_STATUS[task.status] })}
-          title={ADVANCE_LABEL[task.status]}
-          aria-label={ADVANCE_LABEL[task.status]}
-          className="flex shrink-0 cursor-pointer items-center justify-center rounded-full"
-        >
-          <StatusControl status={task.status} />
-        </button>
+        <StatusButton id={task.id} status={task.status} />
 
         {/* Conteúdo: no mobile vira duas linhas (título em cima, metadados
             embaixo); no desktop fica tudo numa linha só. */}

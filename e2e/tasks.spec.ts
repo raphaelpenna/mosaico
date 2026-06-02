@@ -108,6 +108,20 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("visão Tabela mostra colunas, incluindo campo customizado", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Tabela" }).click();
+  await expect(page.getByRole("table")).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "Tarefa" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "Coleção" }),
+  ).toBeVisible();
+});
+
 test("campo customizado: definir 'Coleção' no painel da tarefa", async ({
   page,
 }) => {

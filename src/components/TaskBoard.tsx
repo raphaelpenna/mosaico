@@ -27,6 +27,7 @@ import {
   type GroupBy,
 } from "@/lib/tasks/board";
 import { TaskCard } from "./TaskCard";
+import { TaskTable } from "./TaskTable";
 import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
@@ -78,9 +79,10 @@ export function TaskBoard({
   const [groupBy, setGroupBy] = useState<GroupBy>(
     () => (params.get("group") as GroupBy) || defaultGroup,
   );
-  const [view, setView] = useState<"list" | "board">(() =>
-    params.get("view") === "board" ? "board" : "list",
-  );
+  const [view, setView] = useState<"list" | "board" | "table">(() => {
+    const v = params.get("view");
+    return v === "board" || v === "table" ? v : "list";
+  });
 
   // Sincroniza filtros/visão na URL SEM re-render do servidor (history, não
   // router) — assim o link é compartilhável mas a página (RSC) não re-roda a
@@ -194,7 +196,9 @@ export function TaskBoard({
   // ---- comandos do ⌘K (eventos) -------------------------------------------
   useEffect(() => {
     const onToggleView = () =>
-      setView((v) => (v === "list" ? "board" : "list"));
+      setView((v) =>
+        v === "list" ? "board" : v === "board" ? "table" : "list",
+      );
     const onClear = () => {
       setQuery("");
       setPriorityFilter(new Set());
@@ -352,6 +356,11 @@ export function TaskBoard({
               onClick={() => setView("board")}
               label="Quadro"
             />
+            <ViewButton
+              on={view === "table"}
+              onClick={() => setView("table")}
+              label="Tabela"
+            />
           </div>
         </div>
 
@@ -407,6 +416,8 @@ export function TaskBoard({
           </p>
         ) : view === "board" ? (
           <BoardView tasks={filtered} />
+        ) : view === "table" ? (
+          <TaskTable tasks={filtered} />
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (
