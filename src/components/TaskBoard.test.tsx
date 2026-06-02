@@ -44,7 +44,13 @@ const tasks = [
 describe("TaskBoard", () => {
   it("renderiza as tarefas e a busca filtra a lista", async () => {
     const user = userEvent.setup();
-    render(<TaskBoard tasks={tasks} today="2026-06-01" brandIds={["farm"]} />);
+    render(
+      <TaskBoard
+        tasks={tasks}
+        today="2026-06-01"
+        brands={[{ id: "farm", name: "Farm" }]}
+      />,
+    );
 
     expect(screen.getByText("Briefing de inverno")).toBeInTheDocument();
     expect(screen.getByText("Revisar mix de produto")).toBeInTheDocument();
@@ -61,7 +67,13 @@ describe("TaskBoard", () => {
   });
 
   it("estado vazio quando não há tarefas", () => {
-    render(<TaskBoard tasks={[]} today="2026-06-01" brandIds={["farm"]} />);
+    render(
+      <TaskBoard
+        tasks={[]}
+        today="2026-06-01"
+        brands={[{ id: "farm", name: "Farm" }]}
+      />,
+    );
     expect(screen.getByText("Nenhuma tarefa por aqui")).toBeInTheDocument();
   });
 });

@@ -1,25 +1,26 @@
 /**
- * Taxonomia de marca do Grupo Azzas.
+ * Identidade de marca do Grupo Azzas.
  *
- * Identidade de marca estatica — apenas nomes/slugs. NAO ha fonte de dado por
- * tras: a taxonomia e config no codigo, nao vem de banco. O campo `bu` e um
- * agrupamento PROVISORIO e NAO-CANONICO; quando a taxonomia oficial de BU
- * chegar, basta editar este arquivo.
+ * A partir do Admin v1, a taxonomia deixou de ser config FIXA no código: o
+ * catálogo vivo (mutável) está em `store.ts`; aqui ficam só o TIPO `Brand` e a
+ * SEMENTE inicial. Continua sem banco real — o store é em memória (mock),
+ * reseta no restart, como o de tarefas.
  */
 export interface Brand {
   /** slug estavel usado como id interno e em URLs */
   id: string;
   /** nome de exibicao da marca */
   name: string;
-  /** codigo de rede de lojas (taxonomia estatica) */
-  redeLojas: string;
-  /** agrupamento de BU — PROVISORIO, nao-canonico */
-  bu: string;
   /** cor de assinatura da marca (hex) — usada como acento sutil na UI */
   accent: string;
+  /** codigo de rede de lojas (taxonomia estatica) — opcional p/ marcas criadas */
+  redeLojas?: string;
+  /** agrupamento de BU — PROVISORIO, nao-canonico; opcional */
+  bu?: string;
 }
 
-export const BRANDS: Brand[] = [
+/** Semente do catálogo de marcas (estado inicial do store). */
+export const SEED_BRANDS: Brand[] = [
   { id: "farm", name: "Farm", redeLojas: "2", bu: "Vestuário", accent: "#e8552d" }, // prettier-ignore
   { id: "animale", name: "Animale", redeLojas: "1", bu: "Vestuário", accent: "#8e1b2e" }, // prettier-ignore
   { id: "fabula", name: "Fábula", redeLojas: "5", bu: "Vestuário", accent: "#1fa67a" }, // prettier-ignore
@@ -30,9 +31,3 @@ export const BRANDS: Brand[] = [
   { id: "carol-bassi", name: "Carol Bassi", redeLojas: "30", bu: "Vestuário", accent: "#9a7b4f" }, // prettier-ignore
   { id: "outlet", name: "OFF Premium (Outlet)", redeLojas: "6", bu: "Outras", accent: "#475569" }, // prettier-ignore
 ];
-
-const BY_ID = new Map(BRANDS.map((b) => [b.id, b]));
-
-export function getBrand(id: string): Brand | undefined {
-  return BY_ID.get(id);
-}

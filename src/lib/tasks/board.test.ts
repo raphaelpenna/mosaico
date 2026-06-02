@@ -196,8 +196,11 @@ describe("buildGroups", () => {
     expect(ana.items).toHaveLength(2);
   });
 
-  it("agrupa por marca na ordem de brandIds", () => {
-    const g = buildGroups(tasks, "brand", ["farm", "animale"]);
+  it("agrupa por marca na ordem recebida, usando os nomes passados", () => {
+    const g = buildGroups(tasks, "brand", [
+      { id: "farm", name: "Farm" },
+      { id: "animale", name: "Animale" },
+    ]);
     expect(g.map((x) => x.key)).toEqual(["farm", "animale"]);
     expect(g[0].label).toBe("Farm");
     expect(g[1].label).toBe("Animale");

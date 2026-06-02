@@ -30,6 +30,7 @@ export default async function WorkLayout({
             defaultBrandId={defaultBrandId}
             userName={user.name}
             userEmail={user.email}
+            isAdmin={scope.role === "admin"}
           />
 
           <div className="flex min-h-full min-w-0 flex-1 flex-col">

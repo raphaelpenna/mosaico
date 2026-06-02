@@ -1,5 +1,4 @@
 import type { Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
-import { getBrand } from "@/lib/brands/taxonomy";
 import { PEOPLE } from "@/lib/people";
 
 /**
@@ -127,7 +126,7 @@ export interface TaskGroup {
 export function buildGroups(
   tasks: Task[],
   groupBy: GroupBy,
-  brandIds: string[] = [],
+  brands: { id: string; name: string }[] = [],
 ): TaskGroup[] {
   let groups: { key: string; label: string }[];
   let keyOf: (t: Task) => string;
@@ -141,10 +140,7 @@ export function buildGroups(
     ];
     keyOf = (t) => t.assigneeId ?? "__none";
   } else if (groupBy === "brand") {
-    groups = brandIds.map((id) => ({
-      key: id,
-      label: getBrand(id)?.name ?? id,
-    }));
+    groups = brands.map((b) => ({ key: b.id, label: b.name }));
     keyOf = (t) => t.brandId;
   } else {
     groups = STATUS_GROUPS;

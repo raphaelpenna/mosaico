@@ -53,8 +53,11 @@ apresentação. Nenhuma fonte toca o client. Mutações via server actions em
   (`lib/brands/scope.ts` — `assertBrandInScope`/`resolveScopedBrand`), nunca a
   partir de parâmetro do client. A marca ativa trafega em `?brand=` mas é
   re-resolvida contra o escopo no servidor.
-- **Marca é identidade estática**: a lista de marcas vem da taxonomia
-  (`lib/brands/taxonomy.ts`), config no código — não há fonte de dado por trás.
+- **Marca é catálogo mutável (Admin v1)**: a lista de marcas vive num store em
+  memória (`lib/brands/store.ts`), semeado de `taxonomy.ts` e editável via Admin
+  (CRUD por server actions, papel `admin`). Reseta no restart (mock, sem banco).
+  Clients recebem as marcas por props do servidor — não importam o catálogo.
+  _(Antes a marca era config estática; mudou no Admin v1.)_
 - **Tudo MOCK e rotulado**: nenhum dado real da Azzas; tarefas semeadas são
   fictícias e marcadas `// MOCK`.
 - **Segredos só em env**: `.env.example` tem só placeholders; `.env*` reais no

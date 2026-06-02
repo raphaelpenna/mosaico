@@ -16,16 +16,15 @@ A partir de 2026-06, o produto evolui de gerenciador de tarefas para **gestão d
 trabalho escopada por marca** (cada marca = workspace), no estilo Notion. As
 Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2**.
 
-> ⚠️ **Mudança de invariante:** o Admin v1 (P0) torna **marcas/labels/campos/
-> status editáveis** — supersede o invariante "marca é identidade estática". A
-> taxonomia/labels migrarão de config no código para um store mutável (mock)
-> quando o Admin for implementado. Confirmar antes de mexer.
+> ✅ **Invariante alterado:** marca virou **catálogo mutável** (`lib/brands/store.ts`,
+> mock em memória) editável pelo Admin — supersede "marca é identidade estática"
+> (CLAUDE.md atualizado). Labels/campos/status seguem estáticos até o Admin cont.
 
 **P0 — Fundação** (destrava a evolução; tudo verificável no mock)
 
 - 🟡 **Layout desktop de 3 zonas** — ✅ sidebar esquerda recolhível (marcas + visões) + centro em largura total (`Sidebar`, top bar só no mobile); ⬜ painel direito contextual (detalhe da tarefa em split view) e largura de leitura p/ documentos.
 - 🟡 **Tarefa como página** — ✅ **editor de blocos** no painel (`BlockEditor`): parágrafo, títulos (`#`/`##`), checklist (`[]`), lista (`-`), citação (`>`), divisor (`---`), com atalhos markdown, Enter/Backspace e persistência. ⬜ mais tipos de bloco (tabela, imagem, toggle) e **propriedades tipadas** (número, moeda, data início-fim, URL, pessoa, relação). Quick-add mantido ✅.
-- ⬜ **Admin v1** — CRUD de marcas/workspaces, labels, campos customizados, status e prioridades (exige store mutável — ver invariante acima).
+- 🟡 **Admin v1** — ✅ **marcas/workspaces** (store mutável + tela `/admin`: criar, renomear, recolorir, reordenar, remover; gated por papel `admin`; sessão stub virou admin com escopo = catálogo). ⬜ labels, campos customizados, status e prioridades (Admin cont.).
 
 **P1 — Paridade de uso** (Notion no dia a dia)
 

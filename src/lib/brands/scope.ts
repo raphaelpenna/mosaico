@@ -1,5 +1,5 @@
 import type { AccessScope, Brand } from "@/types";
-import { BRANDS, getBrand } from "./taxonomy";
+import { getBrand, listBrands } from "./store";
 
 /**
  * Helpers de escopo de acesso por marca — desenhados para rodar NO SERVIDOR.
@@ -13,7 +13,7 @@ import { BRANDS, getBrand } from "./taxonomy";
 /** Marcas que a sessao pode ver, na ordem da taxonomia. */
 export function scopedBrands(scope: AccessScope): Brand[] {
   const allowed = new Set(scope.allowedBrandIds);
-  return BRANDS.filter((b) => allowed.has(b.id));
+  return listBrands().filter((b) => allowed.has(b.id));
 }
 
 export function isBrandInScope(scope: AccessScope, brandId: string): boolean {

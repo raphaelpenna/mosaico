@@ -38,12 +38,12 @@ export function TaskBoard({
   tasks,
   today,
   groupByBrand = false,
-  brandIds = [],
+  brands = [],
 }: {
   tasks: Task[];
   today: string;
   groupByBrand?: boolean;
-  brandIds?: string[];
+  brands?: { id: string; name: string }[];
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
@@ -251,7 +251,7 @@ export function TaskBoard({
     );
   }
 
-  const groups = buildGroups(filtered, groupBy, brandIds).filter(
+  const groups = buildGroups(filtered, groupBy, brands).filter(
     (g) => g.items.length > 0,
   );
 

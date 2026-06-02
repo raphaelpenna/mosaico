@@ -108,6 +108,15 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("admin: cria uma marca e ela aparece no catálogo", async ({ page }) => {
+  await page.goto("/admin", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Admin" })).toBeVisible();
+  const name = `Marca ${Date.now()}`;
+  await page.getByRole("textbox", { name: "Nome da nova marca" }).fill(name);
+  await page.getByRole("button", { name: "Adicionar marca" }).click();
+  await expect(page.getByLabel(`Nome da marca ${name}`)).toHaveValue(name);
+});
+
 test("editor de blocos: '# ' vira título e Enter cria novo bloco", async ({
   page,
 }) => {

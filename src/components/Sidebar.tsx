@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Brand } from "@/types";
 import { initials } from "@/lib/people";
 import { Logo } from "./Logo";
@@ -59,16 +59,20 @@ export function Sidebar({
   defaultBrandId,
   userName,
   userEmail,
+  isAdmin = false,
   className = "",
 }: {
   brands: Brand[];
   defaultBrandId: string;
   userName: string;
   userEmail: string;
+  isAdmin?: boolean;
   className?: string;
 }) {
   const params = useSearchParams();
-  const active = params.get("brand") || defaultBrandId;
+  const pathname = usePathname();
+  const onTasks = pathname === "/tasks" || pathname === "/";
+  const active = onTasks ? params.get("brand") || defaultBrandId : "";
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -168,6 +172,37 @@ export function Sidebar({
             Minhas tarefas
           </NavLink>
         </div>
+
+        {isAdmin && (
+          <>
+            {!collapsed && <SectionLabel>Gestão</SectionLabel>}
+            <NavLink
+              href="/admin"
+              active={pathname === "/admin"}
+              collapsed={collapsed}
+              title="Admin"
+              icon={
+                <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden>
+                  <path
+                    d="M8 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                  />
+                  <path
+                    d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              }
+            >
+              Admin
+            </NavLink>
+          </>
+        )}
       </nav>
 
       {/* Rodapé: tema + usuário */}

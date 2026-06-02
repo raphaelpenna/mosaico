@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Session } from "@/types";
+import { allBrandIds } from "@/lib/brands/store";
 
 /**
  * STUB de autenticacao — na FORMA de um provider real.
@@ -11,9 +12,9 @@ import type { Session } from "@/types";
  * infra existente. Trocar este corpo por `auth()` do NextAuth nao muda nenhum
  * caller.
  *
- * O escopo aqui da, de proposito, acesso so a um SUBCONJUNTO de marcas — assim
- * o isolamento por marca/BU fica visivel e testavel desde o dia 1 (o usuario
- * NAO ve Carol Bassi, Foxton, etc.).
+ * Este stub e um ADMIN com acesso a todas as marcas (para o Admin v1 ser
+ * usavel no demo). O isolamento por marca segue validado no servidor (scope) e
+ * coberto por testes; um membro comum teria allowedBrandIds = subconjunto.
  */
 export async function getSession(): Promise<Session> {
   // MOCK — usuario ficticio. Vira a identidade do Entra (claims do id_token).
@@ -25,8 +26,11 @@ export async function getSession(): Promise<Session> {
     },
     scope: {
       userId: "u-stub",
-      allowedBrandIds: ["farm", "animale", "fabula", "maria-filo"],
-      role: "editor",
+      // Admin (stub): enxerga/gerencia TODAS as marcas do catálogo — assim
+      // marcas criadas no Admin aparecem na hora. Um membro comum teria um
+      // SUBCONJUNTO aqui (o isolamento por marca segue validado no servidor).
+      allowedBrandIds: allBrandIds(),
+      role: "admin",
     },
   };
 }

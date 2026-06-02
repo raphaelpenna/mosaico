@@ -13,7 +13,6 @@ export default async function TasksPage({
   // Tudo no servidor: sessao -> escopo -> marca ativa -> port de tarefas.
   const { user, scope } = await getSession();
   const brands = scopedBrands(scope);
-  const brandIds = brands.map((b) => b.id);
   const { brand } = await searchParams;
 
   // Visoes consolidadas (todas as marcas): "all" = tudo; "mine" = atribuidas a
@@ -89,7 +88,7 @@ export default async function TasksPage({
         tasks={tasks}
         today={today}
         groupByBrand={consolidated}
-        brandIds={brandIds}
+        brands={brands}
       />
     </div>
   );
