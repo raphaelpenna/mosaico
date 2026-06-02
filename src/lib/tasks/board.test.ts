@@ -199,12 +199,56 @@ describe("buildGroups", () => {
   });
 
   it("agrupa por marca na ordem recebida, usando os nomes passados", () => {
-    const g = buildGroups(tasks, "brand", [
-      { id: "farm", name: "Farm" },
-      { id: "animale", name: "Animale" },
-    ]);
+    const g = buildGroups(tasks, "brand", {
+      brands: [
+        { id: "farm", name: "Farm" },
+        { id: "animale", name: "Animale" },
+      ],
+    });
     expect(g.map((x) => x.key)).toEqual(["farm", "animale"]);
     expect(g[0].label).toBe("Farm");
     expect(g[1].label).toBe("Animale");
+  });
+
+  it("agrupa por label (multi-grupo) incluindo 'sem label'", () => {
+    const ltasks = [
+      task({ id: "a", labelIds: ["campanha", "produto"] }),
+      task({ id: "b", labelIds: ["produto"] }),
+      task({ id: "c", labelIds: [] }),
+    ];
+    const g = buildGroups(ltasks, "label", {
+      labels: [
+        { id: "campanha", name: "Campanha" },
+        { id: "produto", name: "Produto" },
+      ],
+    });
+    expect(g.find((x) => x.key === "campanha")!.items.map((t) => t.id)).toEqual(
+      ["a"],
+    );
+    // "a" aparece em campanha E em produto (multi-grupo)
+    expect(g.find((x) => x.key === "produto")!.items.map((t) => t.id)).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(g.find((x) => x.key === "__none")!.items.map((t) => t.id)).toEqual([
+      "c",
+    ]);
+  });
+
+  it("agrupa por prazo em baldes relativos a hoje", () => {
+    const today = "2026-06-10";
+    const dtasks = [
+      task({ id: "atr", dueDate: "2026-06-01" }),
+      task({ id: "hoje", dueDate: "2026-06-10" }),
+      task({ id: "sem" }),
+      task({ id: "mes", dueDate: "2026-06-25" }),
+    ];
+    const g = buildGroups(dtasks, "due", { today });
+    const byKey = (k: string) =>
+      g.find((x) => x.key === k)!.items.map((t) => t.id);
+    expect(byKey("overdue")).toEqual(["atr"]);
+    expect(byKey("today")).toEqual(["hoje"]);
+    expect(byKey("month")).toEqual(["mes"]);
+    expect(byKey("nodate")).toEqual(["sem"]);
   });
 });

@@ -29,7 +29,7 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 **P1 — Paridade de uso** (Notion no dia a dia)
 
 - ✅ Visões: **Lista / Quadro / Tabela / Calendário** (toggle + `?view=`). Tabela = base-de-dados (campos núcleo inline + campos customizados como colunas); Calendário = grade do mês por `dueDate`, navegável, com "sem prazo" no rodapé. Estado por visão persiste na URL.
-- 🟡 Agrupamentos — status/prioridade/responsável/marca ✅; ⬜ por label, por prazo (Hoje/Semana/Mês/Atrasadas), por campo customizado, **aninhado + swimlanes**.
+- 🟡 Agrupamentos — status/prioridade/responsável/marca ✅, **label** (multi-grupo) ✅, **prazo** (Atrasadas/Hoje/Próx. 7 dias/Este mês/Mais tarde/Sem data) ✅; ⬜ por campo customizado, **aninhado + swimlanes**.
 - 🟡 **Subtarefas/checklists** (básico ✅; falta progresso pai-filho), ✅ **comentários + @menções** (no painel; autor/data no servidor, @ resolvidas contra o catálogo de pessoas), ⬜ **templates de tarefa**, ⬜ capa/ícone.
 - ⬜ Admin v2 — usuários e atribuição a marcas; preferências padrão.
 

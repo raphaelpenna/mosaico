@@ -260,6 +260,8 @@ export function TaskBoard({
     { value: "status", label: "Status" },
     { value: "priority", label: "Prioridade" },
     { value: "assignee", label: "Responsável" },
+    { value: "label", label: "Label" },
+    { value: "due", label: "Prazo" },
     ...(groupByBrand ? [{ value: "brand" as GroupBy, label: "Marca" }] : []),
   ];
 
@@ -276,9 +278,11 @@ export function TaskBoard({
     );
   }
 
-  const groups = buildGroups(filtered, groupBy, brands).filter(
-    (g) => g.items.length > 0,
-  );
+  const groups = buildGroups(filtered, groupBy, {
+    brands,
+    labels,
+    today,
+  }).filter((g) => g.items.length > 0);
 
   return (
     <TaskBoardProvider value={ctx}>

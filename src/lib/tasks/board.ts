@@ -115,7 +115,13 @@ export function filterTasks(tasks: Task[], c: FilterCriteria): Task[] {
   });
 }
 
-export type GroupBy = "status" | "priority" | "assignee" | "brand";
+export type GroupBy =
+  | "status"
+  | "priority"
+  | "assignee"
+  | "brand"
+  | "label"
+  | "due";
 
 export interface TaskGroup {
   key: string;
@@ -123,32 +129,75 @@ export interface TaskGroup {
   items: Task[];
 }
 
-/** Agrupa e ordena dentro de cada grupo, na ordem canônica de cada eixo. */
+interface GroupCtx {
+  brands?: { id: string; name: string }[];
+  labels?: { id: string; name: string }[];
+  today?: string;
+}
+
+const DUE_BUCKETS = [
+  { key: "overdue", label: "Atrasadas" },
+  { key: "today", label: "Hoje" },
+  { key: "week", label: "Próximos 7 dias" },
+  { key: "month", label: "Este mês" },
+  { key: "later", label: "Mais tarde" },
+  { key: "nodate", label: "Sem data" },
+];
+
+/** Em qual balde de prazo a tarefa cai, relativo a `today` (ISO). */
+function dueBucket(due: string | undefined, today: string): string {
+  if (!due) return "nodate";
+  if (due < today) return "overdue";
+  if (due === today) return "today";
+  const d = new Date(`${due}T00:00:00`);
+  const t = new Date(`${today}T00:00:00`);
+  const days = Math.round((d.getTime() - t.getTime()) / 86_400_000);
+  if (days <= 7) return "week";
+  if (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth())
+    return "month";
+  return "later";
+}
+
+/**
+ * Agrupa e ordena dentro de cada grupo. `keysOf` devolve as chaves de uma
+ * tarefa — normalmente uma, mas em "label" pode ser várias (a tarefa aparece em
+ * cada label).
+ */
 export function buildGroups(
   tasks: Task[],
   groupBy: GroupBy,
-  brands: { id: string; name: string }[] = [],
+  ctx: GroupCtx = {},
 ): TaskGroup[] {
   let groups: { key: string; label: string }[];
-  let keyOf: (t: Task) => string;
+  let keysOf: (t: Task) => string[];
   if (groupBy === "priority") {
     groups = PRIORITY_META.map((p) => ({ key: p.value, label: p.label }));
-    keyOf = (t) => t.priority;
+    keysOf = (t) => [t.priority];
   } else if (groupBy === "assignee") {
     groups = [
       ...PEOPLE.map((p) => ({ key: p.id, label: p.name })),
       { key: "__none", label: "Sem responsável" },
     ];
-    keyOf = (t) => t.assigneeId ?? "__none";
+    keysOf = (t) => [t.assigneeId ?? "__none"];
   } else if (groupBy === "brand") {
-    groups = brands.map((b) => ({ key: b.id, label: b.name }));
-    keyOf = (t) => t.brandId;
+    groups = (ctx.brands ?? []).map((b) => ({ key: b.id, label: b.name }));
+    keysOf = (t) => [t.brandId];
+  } else if (groupBy === "label") {
+    groups = [
+      ...(ctx.labels ?? []).map((l) => ({ key: l.id, label: l.name })),
+      { key: "__none", label: "Sem label" },
+    ];
+    keysOf = (t) => (t.labelIds.length ? t.labelIds : ["__none"]);
+  } else if (groupBy === "due") {
+    const today = ctx.today ?? "";
+    groups = DUE_BUCKETS;
+    keysOf = (t) => [dueBucket(t.dueDate, today)];
   } else {
     groups = STATUS_GROUPS;
-    keyOf = (t) => t.status;
+    keysOf = (t) => [t.status];
   }
   return groups.map((g) => ({
     ...g,
-    items: tasks.filter((t) => keyOf(t) === g.key).sort(sortTasks),
+    items: tasks.filter((t) => keysOf(t).includes(g.key)).sort(sortTasks),
   }));
 }
