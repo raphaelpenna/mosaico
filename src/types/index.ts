@@ -1,18 +1,14 @@
 /**
  * Tipos de dominio compartilhados do Mosaico.
  *
- * Os tipos de DADO (Brand, MetricRef, MetricValue) vem do schema Zod em
- * lib/data/schema — fonte unica da verdade. Aqui ficam os tipos de sessao,
- * escopo de acesso e tarefa.
+ * `Brand` (identidade de marca, taxonomia estatica) vem de lib/brands/taxonomy.
+ * `Person`/`Label` (catalogos mock) vem de lib/people e lib/labels. Aqui ficam
+ * os tipos de sessao, escopo de acesso e tarefa.
  */
 
-export type {
-  Brand,
-  MetricRef,
-  MetricValue,
-  MetricKey,
-  MetricUnit,
-} from "@/lib/data/schema";
+export type { Brand } from "@/lib/brands/taxonomy";
+export type { Person } from "@/lib/people";
+export type { Label } from "@/lib/labels";
 
 /** Papel do usuario — stub; vira RBAC real (Entra app roles) depois. */
 export type Role = "viewer" | "editor" | "admin";
@@ -23,6 +19,8 @@ export type Role = "viewer" | "editor" | "admin";
  * parametro vindo do client.
  */
 export interface AccessScope {
+  /** id do usuario dono da sessao — escopa as tarefas (commodity) por dono */
+  userId: string;
   /** ids de marca que esta sessao pode ver/vincular */
   allowedBrandIds: string[];
   role: Role;
@@ -41,16 +39,61 @@ export interface Session {
 
 export type TaskStatus = "todo" | "doing" | "done";
 
-/** A tarefa e o "host" descartavel; o `dataLink` e o diferencial duravel. */
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+
+/** Item de checklist dentro de uma tarefa. */
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
-  /** referencia de dado Azzas vinculada a esta tarefa (opcional) */
-  dataLink?: import("@/lib/data/schema").MetricRef;
+  priority: TaskPriority;
+  /** prazo no formato ISO "YYYY-MM-DD" (sem hora); ausente = sem prazo */
+  dueDate?: string;
+  /** id do responsavel (ver lib/people); ausente = nao atribuida */
+  assigneeId?: string;
+  /** ids de labels aplicadas (ver lib/labels) */
+  labelIds: string[];
+  /** checklist de subtarefas */
+  subtasks: Subtask[];
+  /** descricao curta (texto simples; docs ricos virao do core OSS) */
+  description?: string;
+  /** marca a que a tarefa pertence — escopada/validada no servidor */
+  brandId: string;
   createdBy: string;
 }
 
 export interface NewTaskInput {
   title: string;
+  /** marca da tarefa — validada contra o escopo da sessao no servidor */
+  brandId: string;
+  /** prioridade inicial — default "medium" se omitida */
+  priority?: TaskPriority;
+  /** prazo inicial (ISO) — opcional (usado pelo quick-add) */
+  dueDate?: string;
+  /** responsavel inicial — opcional (usado pelo quick-add) */
+  assigneeId?: string;
+  /** labels iniciais — opcional (usado pelo quick-add) */
+  labelIds?: string[];
+}
+
+/**
+ * Patch parcial de uma tarefa. So as chaves presentes sao alteradas; `null` em
+ * dueDate/assigneeId LIMPA o campo. Esta e a unica forma de mutar uma tarefa
+ * (alem de create/delete) — granularidade vive nas server actions, nao no port.
+ */
+export interface TaskPatch {
+  title?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  dueDate?: string | null;
+  assigneeId?: string | null;
+  labelIds?: string[];
+  subtasks?: Subtask[];
+  description?: string;
 }

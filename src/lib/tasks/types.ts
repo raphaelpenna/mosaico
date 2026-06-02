@@ -1,22 +1,38 @@
-import type { AccessScope, MetricRef, NewTaskInput, Task } from "@/types";
+import type { AccessScope, NewTaskInput, Task, TaskPatch } from "@/types";
 
 /**
- * O PORT de tarefas — o COMMODITY.
+ * O PORT de tarefas.
  *
- * Gestao de tarefa/projeto nao e o diferencial da Azzas; vira de um nucleo OSS
- * (Plane) no futuro. Por isso fica atras de uma interface igual a do dado: hoje
- * MockTaskSource (em memoria), amanha um cliente do Plane. Trocar e mudanca de
- * um arquivo (ver index.ts), sem tocar na UI.
+ * Gestao de tarefa/projeto fica atras de uma interface: hoje MockTaskSource
+ * (em memoria), amanha um cliente do Plane. Trocar e mudanca de um arquivo
+ * (ver index.ts), sem tocar na UI.
  *
- * Espelhar a estrategia do projeto — "comprar o commodity, construir o
- * diferencial" — direto na arquitetura: dois ports, e a cola entre eles
- * (lib/links/resolve) e o que o Mosaico unicamente constroi.
+ * Toda operacao recebe o `scope` (derivado da sessao no servidor) e e validada
+ * contra ele — escopo por dono e por marca nunca vem de parametro do client.
+ * Mutacao e uma so: `updateTask(id, patch)`. A granularidade ("mudar status",
+ * "definir prazo", ...) mora nas server actions, nao no port.
  */
 export interface TaskSource {
-  listTasks(scope: AccessScope): Promise<Task[]>;
+  /**
+   * Tarefas do dono da sessao. Se `brandId` vier, filtra (e valida) por aquela
+   * marca; sem `brandId`, devolve todas as marcas em escopo do dono.
+   */
+  listTasks(scope: AccessScope, brandId?: string): Promise<Task[]>;
   createTask(input: NewTaskInput, scope: AccessScope): Promise<Task>;
-  /** Vincula uma referencia de dado a uma tarefa (valida o escopo da marca). */
-  linkData(taskId: string, ref: MetricRef, scope: AccessScope): Promise<Task>;
-  /** Remove o vinculo de dado de uma tarefa. */
-  unlinkData(taskId: string, scope: AccessScope): Promise<Task>;
+  /**
+   * Aplica um patch parcial a uma tarefa do dono. Retorna a tarefa atualizada,
+   * ou null se nao existir / for de outro dono.
+   */
+  updateTask(
+    id: string,
+    patch: TaskPatch,
+    scope: AccessScope,
+  ): Promise<Task | null>;
+  /** Remove uma tarefa do dono. */
+  deleteTask(id: string, scope: AccessScope): Promise<void>;
+  /**
+   * Reinsere uma tarefa removida PRESERVANDO o id (undo do delete). Valida dono
+   * e marca; no-op se o id ja existir ou estiver fora do escopo.
+   */
+  restoreTask(task: Task, scope: AccessScope): Promise<void>;
 }

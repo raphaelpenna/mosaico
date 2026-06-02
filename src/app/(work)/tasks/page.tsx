@@ -1,70 +1,88 @@
-import type { Task } from "@/types";
 import { getSession } from "@/lib/auth/session";
 import { getTaskSource } from "@/lib/tasks";
 import { resolveScopedBrand, scopedBrands } from "@/lib/brands/scope";
-import { getBrand } from "@/lib/brands/taxonomy";
-import { resolveTaskData, type ResolvedTaskData } from "@/lib/links/resolve";
-import { BrandSelector } from "@/components/BrandSelector";
 import { AddTask } from "@/components/AddTask";
-import { TaskList } from "@/components/TaskList";
-
-/** Item de tarefa ja resolvido no servidor para a UI consumir. */
-export interface ResolvedTaskItem {
-  task: Task;
-  resolved: ResolvedTaskData;
-  linkedBrandName: string | undefined;
-}
+import { TaskBoard } from "@/components/TaskBoard";
+import type { TaskStatus } from "@/types";
 
 export default async function TasksPage({
   searchParams,
 }: {
   searchParams: Promise<{ brand?: string }>;
 }) {
+  // Tudo no servidor: sessao -> escopo -> marca ativa -> port de tarefas.
+  const { scope } = await getSession();
+  const brands = scopedBrands(scope);
+  const brandIds = brands.map((b) => b.id);
   const { brand } = await searchParams;
 
-  // Tudo no servidor: sessao -> escopo -> ports. Nenhuma fonte vaza pro client.
-  const { user, scope } = await getSession();
-  // Marcas do seletor vem da taxonomia (config estatica) escopada pela sessao —
-  // nao da fonte de dados. Assim o seletor nao depende da fonte estar pronta.
-  const brands = scopedBrands(scope);
-  const activeBrand = resolveScopedBrand(scope, brand);
+  // "all" = visão consolidada de todas as marcas em escopo. Caso contrário, a
+  // marca ativa vem de ?brand= revalidada, com fallback na primeira em escopo.
+  const allView = brand === "all";
+  const activeBrand = allView
+    ? null
+    : (resolveScopedBrand(scope, brand) ?? brands[0]);
 
-  const tasks = await getTaskSource().listTasks(scope);
-  const items: ResolvedTaskItem[] = await Promise.all(
-    tasks.map(async (task) => ({
-      task,
-      resolved: await resolveTaskData(task, scope),
-      linkedBrandName: task.dataLink
-        ? getBrand(task.dataLink.brandId)?.name
-        : undefined,
-    })),
-  );
+  const tasks = allView
+    ? await getTaskSource().listTasks(scope)
+    : activeBrand
+      ? await getTaskSource().listTasks(scope, activeBrand.id)
+      : [];
+
+  const count = (s: TaskStatus) => tasks.filter((t) => t.status === s).length;
+  const done = count("done");
+  const total = tasks.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  // Referencia de "hoje" (ISO) resolvida no servidor — passada aos cards para a
+  // marcacao de prazo (atrasado/hoje) bater no SSR e no client.
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-5 py-8">
-      {/* Banner: deixa explicito que TODO dado e ficticio neste milestone. */}
-      <div className="rounded-md bg-amber-400/15 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
-        Ambiente de demonstração — todos os números são{" "}
-        <strong>fictícios (MOCK)</strong>. Nenhum dado real da Azzas.
-      </div>
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-5 py-8">
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-2xl font-semibold tracking-tight">Tarefas</h1>
+            <p className="text-muted text-sm">
+              {allView
+                ? "Trabalho de todas as marcas em escopo."
+                : activeBrand
+                  ? `Trabalho da marca ${activeBrand.name}.`
+                  : "Nenhuma marca em escopo para esta sessão."}
+            </p>
+          </div>
+          {total > 0 && (
+            <span className="text-muted text-sm tabular-nums">
+              {count("todo")} a fazer · {count("doing")} fazendo · {done} feito
+            </span>
+          )}
+        </div>
 
-      <header className="flex flex-col gap-1">
-        <h1 className="text-xl font-semibold">Mosaico · Tarefas</h1>
-        <p className="text-foreground/60 text-sm">
-          Dado Azzas no contexto do trabalho — vincule uma métrica de marca a
-          uma tarefa.
-        </p>
+        {total > 0 && (
+          <div
+            className="bg-surface-2 h-1.5 w-full overflow-hidden rounded-full"
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Progresso"
+          >
+            <div
+              className="bg-done h-full rounded-full transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
       </header>
 
-      <div className="border-foreground/10 flex flex-wrap items-center justify-between gap-2 border-y py-2 text-sm">
-        <BrandSelector brands={brands} />
-        <span className="text-foreground/50 text-xs">
-          {user.name} · escopo: {brands.map((b) => b.name).join(", ")}
-        </span>
-      </div>
-
-      <AddTask />
-      <TaskList items={items} activeBrand={activeBrand} />
+      {!allView && activeBrand && <AddTask brandId={activeBrand.id} />}
+      <TaskBoard
+        tasks={tasks}
+        today={today}
+        groupByBrand={allView}
+        brandIds={brandIds}
+      />
     </div>
   );
 }

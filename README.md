@@ -35,11 +35,11 @@ A estratégia do Mosaico ("comprar o commodity, construir o diferencial") está
 codificada na arquitetura. A UI **nunca** fala com uma fonte de dados direta —
 só com interfaces, atrás de uma fronteira `server-only`.
 
-| Camada | Papel | Hoje | Amanhã | Onde |
-| --- | --- | --- | --- | --- |
-| **`DataSource`** | dado Azzas (**diferencial**) | `MockDataSource` | `MCPDataSource` | [`src/lib/data`](src/lib/data) |
-| **`TaskSource`** | tarefas (**commodity**) | `MockTaskSource` | cliente Plane | [`src/lib/tasks`](src/lib/tasks) |
-| **resolver de DataLink** | a cola que o Mosaico constrói | — | (igual) | [`src/lib/links/resolve.ts`](src/lib/links/resolve.ts) |
+| Camada                   | Papel                         | Hoje             | Amanhã          | Onde                                                   |
+| ------------------------ | ----------------------------- | ---------------- | --------------- | ------------------------------------------------------ |
+| **`DataSource`**         | dado Azzas (**diferencial**)  | `MockDataSource` | `MCPDataSource` | [`src/lib/data`](src/lib/data)                         |
+| **`TaskSource`**         | tarefas (**commodity**)       | `MockTaskSource` | cliente Plane   | [`src/lib/tasks`](src/lib/tasks)                       |
+| **resolver de DataLink** | a cola que o Mosaico constrói | —                | (igual)         | [`src/lib/links/resolve.ts`](src/lib/links/resolve.ts) |
 
 Regras de ouro:
 
@@ -60,7 +60,7 @@ Regras de ouro:
    opções, ambas async e server-only:
    - **Cliente HTTP** para os agentes MCP Azzas já existentes (recomendado —
      reaproveita a infra, não reconstrói o acesso a BigQuery), via `MCP_BASE_URL`
-     + token; **ou**
+     - token; **ou**
    - **BigQuery direto** (`@google-cloud/bigquery`) via `GOOGLE_SERVICE_ACCOUNT_JSON`,
      aplicando o escopo (`allowedBrandIds → REDE_LOJAS`) **na query**.
 2. Defina `DATA_SOURCE=mcp` no `.env.local`. **Nenhum componente muda.**

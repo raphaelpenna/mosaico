@@ -1,78 +1,173 @@
 "use client";
 
-import { useTransition } from "react";
-import type { Brand, Task } from "@/types";
-import type { ResolvedTaskData } from "@/lib/links/resolve";
-import { unlinkDataAction } from "@/app/(work)/tasks/actions";
-import { DataLinkPicker } from "./DataLinkPicker";
+import { useState } from "react";
+import type { Task, TaskStatus } from "@/types";
+import { useTaskBoard } from "./task-board-context";
+import { TaskTitle } from "./TaskTitle";
+import { PriorityPicker } from "./PriorityPicker";
+import { DuePicker } from "./DuePicker";
+import { AssigneePicker } from "./AssigneePicker";
+import { LabelChips } from "./LabelChips";
+import { TaskDetail } from "./TaskDetail";
 
-const STATUS_STYLE: Record<Task["status"], string> = {
-  todo: "bg-foreground/10 text-foreground/60",
-  doing: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
-  done: "bg-green-500/15 text-green-700 dark:text-green-300",
+// Clicar no controle avanca o workflow: a fazer -> fazendo -> feito -> (reabre).
+const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
+  todo: "doing",
+  doing: "done",
+  done: "todo",
 };
-const STATUS_LABEL: Record<Task["status"], string> = {
-  todo: "A fazer",
-  doing: "Fazendo",
-  done: "Feito",
+const ADVANCE_LABEL: Record<TaskStatus, string> = {
+  todo: "Marcar como fazendo",
+  doing: "Marcar como feito",
+  done: "Reabrir tarefa",
 };
 
-export function TaskCard({
-  task,
-  resolved,
-  linkedBrandName,
-  activeBrand,
-}: {
-  task: Task;
-  resolved: ResolvedTaskData;
-  linkedBrandName: string | undefined;
-  activeBrand: Brand | undefined;
-}) {
-  const [pending, startTransition] = useTransition();
+function StatusControl({ status }: { status: TaskStatus }) {
+  if (status === "done") {
+    return (
+      <span className="bg-done flex h-[18px] w-[18px] items-center justify-center rounded-full">
+        <svg viewBox="0 0 16 16" className="h-3 w-3 text-white" aria-hidden>
+          <path
+            d="M4 8.5l2.5 2.5L12 5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    );
+  }
+  if (status === "doing") {
+    return (
+      <span className="border-doing flex h-[18px] w-[18px] items-center justify-center rounded-full border-2">
+        <span className="bg-doing h-2 w-2 rounded-full" />
+      </span>
+    );
+  }
+  return (
+    <span className="border-faint group-hover:border-fg h-[18px] w-[18px] rounded-full border-2 transition-colors" />
+  );
+}
+
+export function TaskCard({ task }: { task: Task }) {
+  const { mutate, remove, selected, toggleSelect, selecting } = useTaskBoard();
+  const [open, setOpen] = useState(false);
+  const done = task.status === "done";
+  const isSelected = selected.has(task.id);
+  const subDone = task.subtasks.filter((s) => s.done).length;
 
   return (
-    <li className="border-foreground/10 flex flex-col gap-2 rounded-lg border p-3">
-      <div className="flex items-center gap-2">
-        <span
-          className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${STATUS_STYLE[task.status]}`}
+    <li
+      className={`group bg-surface rounded-xl border transition-colors ${
+        isSelected
+          ? "border-accent ring-accent/30 ring-1"
+          : "border-border hover:border-border-strong"
+      }`}
+    >
+      <div className="flex items-start gap-2 px-3 py-2.5 sm:items-center">
+        {/* Seleção (lote) — aparece no hover ou quando ha selecao ativa */}
+        <button
+          type="button"
+          onClick={() => toggleSelect(task.id)}
+          aria-pressed={isSelected}
+          aria-label={isSelected ? "Desmarcar tarefa" : "Selecionar tarefa"}
+          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all ${
+            isSelected
+              ? "border-accent bg-accent text-white"
+              : "border-border-strong text-transparent"
+          } ${selecting || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         >
-          {STATUS_LABEL[task.status]}
-        </span>
-        <span className="text-sm">{task.title}</span>
+          <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden>
+            <path
+              d="M4 8.5l2.5 2.5L12 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {/* Avancar status */}
+        <button
+          type="button"
+          onClick={() => mutate(task.id, { status: NEXT_STATUS[task.status] })}
+          title={ADVANCE_LABEL[task.status]}
+          aria-label={ADVANCE_LABEL[task.status]}
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-full"
+        >
+          <StatusControl status={task.status} />
+        </button>
+
+        {/* Conteúdo: no mobile vira duas linhas (título em cima, metadados
+            embaixo); no desktop fica tudo numa linha só. */}
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+          <TaskTitle id={task.id} title={task.title} done={done} />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <LabelChips labelIds={task.labelIds} className="flex" />
+
+            {task.subtasks.length > 0 && (
+              <span
+                className="text-faint shrink-0 text-xs tabular-nums"
+                title="Subtarefas concluídas"
+              >
+                {subDone}/{task.subtasks.length}
+              </span>
+            )}
+
+            <AssigneePicker id={task.id} assigneeId={task.assigneeId} />
+            <DuePicker id={task.id} dueDate={task.dueDate} />
+            <PriorityPicker id={task.id} priority={task.priority} />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label={open ? "Recolher detalhes" : "Expandir detalhes"}
+          className="text-faint hover:bg-surface-2 hover:text-fg flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`}
+            aria-hidden
+          >
+            <path
+              d="M6 4l4 4-4 4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => remove(task.id)}
+          title="Remover tarefa"
+          aria-label="Remover tarefa"
+          className="text-faint hover:bg-surface-2 hover:text-fg flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
+            <path
+              d="M4 4l8 8M12 4l-8 8"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
       </div>
 
-      {/* A "referencia de dado" no contexto do trabalho — o diferencial. */}
-      {resolved === null ? (
-        <DataLinkPicker taskId={task.id} activeBrand={activeBrand} />
-      ) : (
-        <div className="flex items-center gap-2">
-          {resolved.ok ? (
-            <span className="bg-foreground/[0.04] inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs">
-              <span aria-hidden>🔗</span>
-              <span className="font-medium">{linkedBrandName}</span>
-              <span className="text-foreground/50">·</span>
-              <span>{resolved.value.label}</span>
-              <span className="font-semibold">{resolved.value.formatted}</span>
-              <span className="rounded bg-amber-400/20 px-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
-                MOCK
-              </span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-red-500/10 px-2 py-1 text-xs text-red-700 dark:text-red-300">
-              <span aria-hidden>⚠️</span>
-              {resolved.error}
-            </span>
-          )}
-          <button
-            disabled={pending}
-            onClick={() => startTransition(() => unlinkDataAction(task.id))}
-            className="text-foreground/40 hover:text-foreground/70 text-xs disabled:opacity-50"
-            aria-label="Remover vínculo de dado"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      {open && <TaskDetail task={task} />}
     </li>
   );
 }

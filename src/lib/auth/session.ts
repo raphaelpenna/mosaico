@@ -24,6 +24,7 @@ export async function getSession(): Promise<Session> {
       email: "colaborador@azzas.example",
     },
     scope: {
+      userId: "u-stub",
       allowedBrandIds: ["farm", "animale", "fabula", "maria-filo"],
       role: "editor",
     },

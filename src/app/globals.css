@@ -1,28 +1,189 @@
 @import "tailwindcss";
 
+/*
+ * Sistema visual do Mosaico — direcao "SaaS / produtividade": neutro, denso,
+ * rapido. Cores semanticas vivem em tokens (:root), o dark mode so troca os
+ * tokens, e o @theme expoe tudo como utilitarios Tailwind (bg-surface,
+ * text-muted, border-border, bg-accent, ...).
+ *
+ * Tema via atributo `data-theme` no <html> (light | dark), setado antes do
+ * paint por um script inline (ver RootLayout) a partir da preferencia salva —
+ * sem flash. "system" e resolvido para light/dark nesse script. Sem JS, cai no
+ * tema claro.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --bg: #f7f7f8; /* canvas do app */
+  --surface: #ffffff; /* cards, inputs */
+  --surface-2: #f1f1f3; /* hover / faixas */
+  --border: #e6e6ea;
+  --border-strong: #d6d6dc;
+  --fg: #18181b;
+  --muted: #6b6b73; /* texto secundario — AA (~5:1) */
+  --faint: #6f6f78; /* texto terciario / placeholders — AA (~4.7:1) */
+  --accent: #5b5bd6; /* indigo de acao */
+  --accent-fg: #ffffff;
+  --accent-soft: #ececfb;
+
+  --todo: #a1a1aa;
+  --doing: #d97706;
+  --doing-soft: #fdf0dd;
+  --done: #16a34a;
+  --done-soft: #e7f6ec;
+
+  --prio-urgent: #dc2626;
+  --prio-high: #ea580c;
+  --prio-medium: #2563eb;
+  --prio-low: #94a3b8;
+
+  /* Texto colorido pequeno em AA (4.5:1) no tema claro. */
+  --due-overdue: #b91c1c;
+  --due-today: #b45309;
+  --danger: #b91c1c;
+
+  /* Acento da marca ativa — sobrescrito em runtime por BrandTheme; cai no
+     acento do app quando nenhuma marca esta resolvida. */
+  --brand-accent: var(--accent);
+
+  --ring: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0b;
+  --surface: #141417;
+  --surface-2: #1c1c20;
+  --border: #26262c;
+  --border-strong: #34343c;
+  --fg: #ededee;
+  --muted: #9c9ca6;
+  --faint: #7e7e88; /* ~4.7:1 no fundo escuro */
+  --accent: #8585f5;
+  --accent-fg: #0a0a0b;
+  --accent-soft: #1d1d36;
+
+  --todo: #6a6a74;
+  --doing: #eab464;
+  --doing-soft: #2a2010;
+  --done: #4ade80;
+  --done-soft: #11271b;
+
+  --prio-urgent: #f87171;
+  --prio-high: #fb923c;
+  --prio-medium: #60a5fa;
+  --prio-low: #64748b;
+
+  --due-overdue: #f87171;
+  --due-today: #eab464;
+  --danger: #f87171;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-todo: var(--todo);
+  --color-doing: var(--doing);
+  --color-doing-soft: var(--doing-soft);
+  --color-done: var(--done);
+  --color-done-soft: var(--done-soft);
+
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+::placeholder {
+  color: var(--faint);
+}
+
+/* Foco visivel e consistente em tudo que e interativo. */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--ring);
+  border-radius: 0.5rem;
+}
+
+/* Microinteracoes — curvas e duracoes consistentes. */
+@keyframes mosaico-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mosaico-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mosaico-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.anim-fade {
+  animation: mosaico-fade 120ms ease-out;
+}
+.anim-pop {
+  transform-origin: top;
+  animation: mosaico-pop 130ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.anim-slide-up {
+  animation: mosaico-slide-up 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Respeita quem pede menos movimento — desliga animacoes e transicoes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

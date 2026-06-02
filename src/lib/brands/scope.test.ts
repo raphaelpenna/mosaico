@@ -8,16 +8,18 @@ import {
 } from "./scope";
 
 const scope: AccessScope = {
+  userId: "u-test",
   allowedBrandIds: ["farm", "animale"],
   role: "editor",
 };
 
 describe("escopo de marca (server-side)", () => {
   it("scopedBrands devolve só as marcas permitidas", () => {
-    expect(scopedBrands(scope).map((b) => b.id).sort()).toEqual([
-      "animale",
-      "farm",
-    ]);
+    expect(
+      scopedBrands(scope)
+        .map((b) => b.id)
+        .sort(),
+    ).toEqual(["animale", "farm"]);
   });
 
   it("isBrandInScope reflete o escopo", () => {
