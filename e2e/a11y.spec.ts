@@ -34,7 +34,7 @@ test("a11y: painel de detalhe (propriedades/labels/descrição/checklist) sem vi
   await page.goto("/tasks", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByText("Descrição")).toBeVisible();
+  await expect(page.getByText("Conteúdo")).toBeVisible();
   // Espera a animação de entrada terminar — opacity < 1 durante o slide reduz o
   // contraste efetivo e dá falso positivo no axe.
   await page.waitForTimeout(300);

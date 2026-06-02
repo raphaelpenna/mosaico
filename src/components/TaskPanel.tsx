@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Task, TaskStatus } from "@/types";
 import { useTaskBoard } from "./task-board-context";
 import { SelectMenu } from "./ui/SelectMenu";
@@ -11,6 +11,7 @@ import { DuePicker } from "./DuePicker";
 import { PriorityPicker } from "./PriorityPicker";
 import { LabelEditor } from "./LabelEditor";
 import { Subtasks } from "./Subtasks";
+import { BlockEditor } from "./BlockEditor";
 
 /**
  * Painel direito (split view / slide-over) com o detalhe da tarefa — a base da
@@ -50,7 +51,6 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 export function TaskPanel({ task }: { task: Task }) {
   const { mutate, remove, closeTask } = useTaskBoard();
-  const [desc, setDesc] = useState(task.description ?? "");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -154,18 +154,8 @@ export function TaskPanel({ task }: { task: Task }) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <FieldLabel>Descrição</FieldLabel>
-            <textarea
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              onBlur={() => {
-                if (desc !== (task.description ?? ""))
-                  mutate(task.id, { description: desc });
-              }}
-              rows={3}
-              placeholder="Adicionar descrição…"
-              className="placeholder:text-faint border-border focus:border-border-strong resize-y rounded-md border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-            />
+            <FieldLabel>Conteúdo</FieldLabel>
+            <BlockEditor id={task.id} blocks={task.blocks} />
           </div>
 
           <div className="flex flex-col gap-1.5">

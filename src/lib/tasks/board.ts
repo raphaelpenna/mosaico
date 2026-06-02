@@ -51,6 +51,7 @@ export function applyPatch(t: Task, patch: TaskPatch): Task {
   if (patch.priority !== undefined) next.priority = patch.priority;
   if (patch.labelIds !== undefined) next.labelIds = patch.labelIds;
   if (patch.subtasks !== undefined) next.subtasks = patch.subtasks;
+  if (patch.blocks !== undefined) next.blocks = patch.blocks;
   if (patch.description !== undefined) next.description = patch.description;
   if (patch.dueDate !== undefined) next.dueDate = patch.dueDate ?? undefined;
   if (patch.assigneeId !== undefined)

@@ -7,6 +7,8 @@ import { parseQuickAdd } from "@/lib/tasks/quickadd";
 import { isPerson } from "@/lib/people";
 import { isLabel } from "@/lib/labels";
 import type {
+  Block,
+  BlockType,
   Subtask,
   Task,
   TaskPatch,
@@ -32,6 +34,14 @@ const VALID_PRIORITY: readonly TaskPriority[] = [
   "urgent",
 ];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_BLOCK: readonly BlockType[] = [
+  "paragraph",
+  "heading",
+  "todo",
+  "bullet",
+  "quote",
+  "divider",
+];
 
 /** Aceita so chaves conhecidas e valores validos — nunca confia no client. */
 function sanitize(patch: TaskPatch): TaskPatch {
@@ -50,6 +60,18 @@ function sanitize(patch: TaskPatch): TaskPatch {
     p.assigneeId = patch.assigneeId;
   if (Array.isArray(patch.labelIds))
     p.labelIds = patch.labelIds.filter(isLabel);
+  if (Array.isArray(patch.blocks))
+    p.blocks = patch.blocks
+      .filter((b) => b && VALID_BLOCK.includes(b.type))
+      .map(
+        (b): Block => ({
+          id: String(b.id),
+          type: b.type,
+          text: typeof b.text === "string" ? b.text : "",
+          ...(b.type === "heading" ? { level: b.level === 2 ? 2 : 1 } : {}),
+          ...(b.type === "todo" ? { done: Boolean(b.done) } : {}),
+        }),
+      );
   if (typeof patch.description === "string") p.description = patch.description;
   if (Array.isArray(patch.subtasks))
     p.subtasks = patch.subtasks

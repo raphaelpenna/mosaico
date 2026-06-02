@@ -22,7 +22,7 @@ const SEED_OWNER = "u-stub";
 function seedTasks(): Task[] {
   // Espalhadas por marca, status, prioridade, responsavel e labels para o demo
   // mostrar tudo funcionando desde o primeiro load.
-  const seed: Array<Omit<Task, "id" | "createdBy" | "subtasks">> = [
+  const seed: Array<Omit<Task, "id" | "createdBy" | "subtasks" | "blocks">> = [
     {
       title: "Planejar reposição da loja flagship — inverno",
       status: "doing",
@@ -95,6 +95,7 @@ function seedTasks(): Task[] {
     ...t,
     labelIds: [...t.labelIds],
     subtasks: [],
+    blocks: [],
     id: nextId(),
     createdBy: SEED_OWNER,
   }));
@@ -128,6 +129,7 @@ export class MockTaskSource implements TaskSource {
         ...t,
         labelIds: [...t.labelIds],
         subtasks: [...t.subtasks],
+        blocks: [...t.blocks],
       }));
   }
 
@@ -145,6 +147,7 @@ export class MockTaskSource implements TaskSource {
       assigneeId: input.assigneeId,
       labelIds: input.labelIds ? [...input.labelIds] : [],
       subtasks: [],
+      blocks: [],
       brandId: input.brandId,
       createdBy: scope.userId,
     };
@@ -153,6 +156,7 @@ export class MockTaskSource implements TaskSource {
       ...task,
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
+      blocks: [...task.blocks],
     };
   }
 
@@ -173,6 +177,7 @@ export class MockTaskSource implements TaskSource {
     if (patch.priority !== undefined) task.priority = patch.priority;
     if (patch.labelIds !== undefined) task.labelIds = [...patch.labelIds];
     if (patch.subtasks !== undefined) task.subtasks = [...patch.subtasks];
+    if (patch.blocks !== undefined) task.blocks = [...patch.blocks];
     if (patch.description !== undefined) task.description = patch.description;
 
     // null LIMPA o campo; string define; undefined nao mexe.
@@ -189,6 +194,7 @@ export class MockTaskSource implements TaskSource {
       ...task,
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
+      blocks: [...task.blocks],
     };
   }
 
@@ -209,6 +215,7 @@ export class MockTaskSource implements TaskSource {
       ...task,
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
+      blocks: [...task.blocks],
     });
   }
 }

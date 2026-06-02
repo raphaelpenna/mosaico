@@ -29,6 +29,7 @@ function task(over: Partial<Task>): Task {
     priority: "medium",
     labelIds: [],
     subtasks: [],
+    blocks: [],
     brandId: "farm",
     createdBy: "u-stub",
     ...over,

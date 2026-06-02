@@ -108,6 +108,20 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("editor de blocos: '# ' vira título e Enter cria novo bloco", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
+  const panel = page.getByRole("dialog");
+  const blocks = panel.getByRole("textbox", { name: "Bloco de conteúdo" });
+  await blocks.first().click();
+  await blocks.first().pressSequentially("# Plano de inverno");
+  await expect(blocks.first()).toHaveValue("Plano de inverno");
+  await page.keyboard.press("Enter");
+  await expect(blocks).toHaveCount(2);
+});
+
 test("Kanban: arrastar um card para outra coluna muda o status", async ({
   page,
 }) => {

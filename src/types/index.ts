@@ -48,6 +48,25 @@ export interface Subtask {
   done: boolean;
 }
 
+/** Bloco do corpo da tarefa (a "página"). */
+export type BlockType =
+  | "paragraph"
+  | "heading"
+  | "todo"
+  | "bullet"
+  | "quote"
+  | "divider";
+
+export interface Block {
+  id: string;
+  type: BlockType;
+  text: string;
+  /** heading: 1 ou 2 */
+  level?: 1 | 2;
+  /** todo: concluído */
+  done?: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -61,7 +80,9 @@ export interface Task {
   labelIds: string[];
   /** checklist de subtarefas */
   subtasks: Subtask[];
-  /** descricao curta (texto simples; docs ricos virao do core OSS) */
+  /** corpo da tarefa em blocos (a "página") */
+  blocks: Block[];
+  /** descricao curta (legado; o corpo rico vive em `blocks`) */
   description?: string;
   /** marca a que a tarefa pertence — escopada/validada no servidor */
   brandId: string;
@@ -95,5 +116,6 @@ export interface TaskPatch {
   assigneeId?: string | null;
   labelIds?: string[];
   subtasks?: Subtask[];
+  blocks?: Block[];
   description?: string;
 }
