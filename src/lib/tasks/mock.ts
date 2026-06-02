@@ -22,7 +22,9 @@ const SEED_OWNER = "u-stub";
 function seedTasks(): Task[] {
   // Espalhadas por marca, status, prioridade, responsavel e labels para o demo
   // mostrar tudo funcionando desde o primeiro load.
-  const seed: Array<Omit<Task, "id" | "createdBy" | "subtasks" | "blocks">> = [
+  const seed: Array<
+    Omit<Task, "id" | "createdBy" | "subtasks" | "blocks" | "customFields">
+  > = [
     {
       title: "Planejar reposição da loja flagship — inverno",
       status: "doing",
@@ -96,6 +98,7 @@ function seedTasks(): Task[] {
     labelIds: [...t.labelIds],
     subtasks: [],
     blocks: [],
+    customFields: {},
     id: nextId(),
     createdBy: SEED_OWNER,
   }));
@@ -130,6 +133,7 @@ export class MockTaskSource implements TaskSource {
         labelIds: [...t.labelIds],
         subtasks: [...t.subtasks],
         blocks: [...t.blocks],
+        customFields: { ...t.customFields },
       }));
   }
 
@@ -148,6 +152,7 @@ export class MockTaskSource implements TaskSource {
       labelIds: input.labelIds ? [...input.labelIds] : [],
       subtasks: [],
       blocks: [],
+      customFields: {},
       brandId: input.brandId,
       createdBy: scope.userId,
     };
@@ -157,6 +162,7 @@ export class MockTaskSource implements TaskSource {
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
+      customFields: { ...task.customFields },
     };
   }
 
@@ -178,6 +184,8 @@ export class MockTaskSource implements TaskSource {
     if (patch.labelIds !== undefined) task.labelIds = [...patch.labelIds];
     if (patch.subtasks !== undefined) task.subtasks = [...patch.subtasks];
     if (patch.blocks !== undefined) task.blocks = [...patch.blocks];
+    if (patch.customFields !== undefined)
+      task.customFields = { ...patch.customFields };
     if (patch.description !== undefined) task.description = patch.description;
 
     // null LIMPA o campo; string define; undefined nao mexe.
@@ -195,6 +203,7 @@ export class MockTaskSource implements TaskSource {
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
+      customFields: { ...task.customFields },
     };
   }
 
@@ -216,6 +225,7 @@ export class MockTaskSource implements TaskSource {
       labelIds: [...task.labelIds],
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
+      customFields: { ...task.customFields },
     });
   }
 }

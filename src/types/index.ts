@@ -9,6 +9,10 @@
 export type { Brand } from "@/lib/brands/taxonomy";
 export type { Person } from "@/lib/people";
 export type { Label } from "@/lib/labels";
+export type { FieldDef, FieldType } from "@/lib/fields";
+
+/** Valor de um campo customizado: escalar (string) ou multisseleção (string[]). */
+export type CustomFieldValue = string | string[];
 
 /** Papel do usuario — stub; vira RBAC real (Entra app roles) depois. */
 export type Role = "viewer" | "editor" | "admin";
@@ -82,6 +86,8 @@ export interface Task {
   subtasks: Subtask[];
   /** corpo da tarefa em blocos (a "página") */
   blocks: Block[];
+  /** valores de campos customizados, keyed por id do campo (ver lib/fields) */
+  customFields: Record<string, CustomFieldValue>;
   /** descricao curta (legado; o corpo rico vive em `blocks`) */
   description?: string;
   /** marca a que a tarefa pertence — escopada/validada no servidor */
@@ -117,5 +123,6 @@ export interface TaskPatch {
   labelIds?: string[];
   subtasks?: Subtask[];
   blocks?: Block[];
+  customFields?: Record<string, CustomFieldValue>;
   description?: string;
 }

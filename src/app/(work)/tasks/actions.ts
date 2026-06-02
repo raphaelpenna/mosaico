@@ -9,6 +9,7 @@ import { isLabel } from "@/lib/labels";
 import type {
   Block,
   BlockType,
+  CustomFieldValue,
   Subtask,
   Task,
   TaskPatch,
@@ -83,6 +84,15 @@ function sanitize(patch: TaskPatch): TaskPatch {
           done: Boolean(s.done),
         }),
       );
+  if (patch.customFields && typeof patch.customFields === "object") {
+    const cf: Record<string, CustomFieldValue> = {};
+    for (const [k, v] of Object.entries(patch.customFields)) {
+      if (typeof v === "string") cf[k] = v;
+      else if (Array.isArray(v))
+        cf[k] = v.filter((x) => typeof x === "string").map(String);
+    }
+    p.customFields = cf;
+  }
   return p;
 }
 

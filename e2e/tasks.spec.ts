@@ -108,6 +108,20 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("campo customizado: definir 'Coleção' no painel da tarefa", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByText("Coleção")).toBeVisible();
+  await panel.getByRole("button", { name: "Coleção" }).click();
+  await page.getByRole("option", { name: "Inverno" }).click();
+  await expect(panel.getByRole("button", { name: "Coleção" })).toContainText(
+    "Inverno",
+  );
+});
+
 test("admin: cria uma marca e ela aparece no catálogo", async ({ page }) => {
   await page.goto("/admin", { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { name: "Admin" })).toBeVisible();

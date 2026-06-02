@@ -30,6 +30,7 @@ function task(over: Partial<Task>): Task {
     labelIds: [],
     subtasks: [],
     blocks: [],
+    customFields: {},
     brandId: "farm",
     createdBy: "u-stub",
     ...over,

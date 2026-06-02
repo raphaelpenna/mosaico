@@ -9,6 +9,12 @@ import {
   updateBrand,
 } from "@/lib/brands/store";
 import { createLabel, deleteLabel, updateLabel } from "@/lib/labels";
+import {
+  createField,
+  deleteField,
+  updateField,
+  type FieldType,
+} from "@/lib/fields";
 
 /**
  * Server actions do Admin. Toda mutação exige papel "admin" (verificado na
@@ -81,5 +87,48 @@ export async function updateLabelAction(
 export async function deleteLabelAction(id: string): Promise<void> {
   if (!id || !(await assertAdmin())) return;
   deleteLabel(id);
+  revalidatePath("/", "layout");
+}
+
+// ---- Campos customizados --------------------------------------------------
+
+const FIELD_TYPES: readonly FieldType[] = [
+  "text",
+  "number",
+  "currency",
+  "date",
+  "url",
+  "checkbox",
+  "select",
+  "multiselect",
+];
+
+export async function createFieldAction(formData: FormData): Promise<void> {
+  if (!(await assertAdmin())) return;
+  const name = String(formData.get("name") ?? "");
+  const type = String(formData.get("type") ?? "") as FieldType;
+  const brandId = String(formData.get("brandId") ?? "");
+  const optionsRaw = String(formData.get("options") ?? "");
+  if (!name.trim() || !FIELD_TYPES.includes(type)) return;
+  const options = optionsRaw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  createField({ name, type, brandId: brandId || undefined, options });
+  revalidatePath("/", "layout");
+}
+
+export async function updateFieldAction(
+  id: string,
+  patch: { name?: string },
+): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  if (typeof patch.name === "string") updateField(id, { name: patch.name });
+  revalidatePath("/", "layout");
+}
+
+export async function deleteFieldAction(id: string): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  deleteField(id);
   revalidatePath("/", "layout");
 }

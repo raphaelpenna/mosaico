@@ -8,7 +8,14 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import type { Label, Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
+import type {
+  FieldDef,
+  Label,
+  Task,
+  TaskPatch,
+  TaskPriority,
+  TaskStatus,
+} from "@/types";
 import { PEOPLE } from "@/lib/people";
 import {
   PRIORITY_META,
@@ -39,12 +46,14 @@ export function TaskBoard({
   groupByBrand = false,
   brands = [],
   labels = [],
+  fields = [],
 }: {
   tasks: Task[];
   today: string;
   groupByBrand?: boolean;
   brands?: { id: string; name: string }[];
   labels?: Label[];
+  fields?: FieldDef[];
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
@@ -221,6 +230,7 @@ export function TaskBoard({
   const ctx = {
     today,
     labels,
+    fields,
     mutate,
     remove,
     selected,

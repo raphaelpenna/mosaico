@@ -23,8 +23,8 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 **P0 — Fundação** (destrava a evolução; tudo verificável no mock)
 
 - 🟡 **Layout desktop de 3 zonas** — ✅ sidebar esquerda recolhível (marcas + visões) + centro em largura total (`Sidebar`, top bar só no mobile); ⬜ painel direito contextual (detalhe da tarefa em split view) e largura de leitura p/ documentos.
-- 🟡 **Tarefa como página** — ✅ **editor de blocos** no painel (`BlockEditor`): parágrafo, títulos (`#`/`##`), checklist (`[]`), lista (`-`), citação (`>`), divisor (`---`), com atalhos markdown, Enter/Backspace e persistência. ⬜ mais tipos de bloco (tabela, imagem, toggle) e **propriedades tipadas** (número, moeda, data início-fim, URL, pessoa, relação). Quick-add mantido ✅.
-- 🟡 **Admin v1** — ✅ **marcas/workspaces** (criar, renomear, recolorir, reordenar, remover) e ✅ **labels** (criar, renomear, recolorir, remover), em `/admin`, gated por papel `admin`. Catálogos mutáveis (`brands/store`, `labels`); clients recebem por props/contexto. ⬜ status, prioridades e campos customizados (precisam generalizar o workflow hardcoded).
+- 🟡 **Tarefa como página** — ✅ **editor de blocos** (`#`/`##`/`[]`/`-`/`>`/`---`, markdown, Enter/Backspace) e ✅ **propriedades tipadas via campos customizados** (definidos no Admin, global ou por marca; tipos: texto, número, moeda R$, data, URL, caixa, seleção, multisseleção) renderizados no painel por tipo. Quick-add mantido ✅. ⬜ mais blocos (tabela/imagem/toggle) e tipos pessoa/relação/data-início-fim.
+- 🟡 **Admin v1** — ✅ **marcas/workspaces**, ✅ **labels** e ✅ **campos customizados** (nome + tipo + escopo global/marca + opções) em `/admin`, gated por papel `admin`. Catálogos mutáveis (`brands/store`, `labels`, `fields`); clients recebem por props/contexto. ⬜ status e prioridades (precisam generalizar o workflow hardcoded).
 
 **P1 — Paridade de uso** (Notion no dia a dia)
 
