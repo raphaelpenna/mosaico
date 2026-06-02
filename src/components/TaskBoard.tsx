@@ -8,9 +8,8 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import type { Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
+import type { Label, Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
 import { PEOPLE } from "@/lib/people";
-import { LABELS } from "@/lib/labels";
 import {
   PRIORITY_META,
   STATUS_GROUPS,
@@ -39,11 +38,13 @@ export function TaskBoard({
   today,
   groupByBrand = false,
   brands = [],
+  labels = [],
 }: {
   tasks: Task[];
   today: string;
   groupByBrand?: boolean;
   brands?: { id: string; name: string }[];
+  labels?: Label[];
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
@@ -219,6 +220,7 @@ export function TaskBoard({
 
   const ctx = {
     today,
+    labels,
     mutate,
     remove,
     selected,
@@ -309,7 +311,7 @@ export function TaskBoard({
             ariaLabel="Filtrar por label"
           >
             <option value="">Todas as labels</option>
-            {LABELS.map((l) => (
+            {labels.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.name}
               </option>

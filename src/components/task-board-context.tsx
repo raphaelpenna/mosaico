@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { TaskPatch } from "@/types";
+import type { Label, TaskPatch } from "@/types";
 
 /**
  * Contexto do board: ponto unico de mutacao para os controles de cada linha.
@@ -11,6 +11,8 @@ import type { TaskPatch } from "@/types";
 export interface TaskBoardCtx {
   /** referencia de "hoje" (ISO) resolvida no servidor */
   today: string;
+  /** catálogo de labels (do servidor) — clients não importam o store */
+  labels: Label[];
   /** aplica um patch parcial a uma tarefa (otimista + servidor) */
   mutate: (id: string, patch: TaskPatch) => void;
   /** remove uma tarefa (otimista + servidor) com toast de desfazer */

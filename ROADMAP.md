@@ -24,7 +24,7 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 
 - 🟡 **Layout desktop de 3 zonas** — ✅ sidebar esquerda recolhível (marcas + visões) + centro em largura total (`Sidebar`, top bar só no mobile); ⬜ painel direito contextual (detalhe da tarefa em split view) e largura de leitura p/ documentos.
 - 🟡 **Tarefa como página** — ✅ **editor de blocos** no painel (`BlockEditor`): parágrafo, títulos (`#`/`##`), checklist (`[]`), lista (`-`), citação (`>`), divisor (`---`), com atalhos markdown, Enter/Backspace e persistência. ⬜ mais tipos de bloco (tabela, imagem, toggle) e **propriedades tipadas** (número, moeda, data início-fim, URL, pessoa, relação). Quick-add mantido ✅.
-- 🟡 **Admin v1** — ✅ **marcas/workspaces** (store mutável + tela `/admin`: criar, renomear, recolorir, reordenar, remover; gated por papel `admin`; sessão stub virou admin com escopo = catálogo). ⬜ labels, campos customizados, status e prioridades (Admin cont.).
+- 🟡 **Admin v1** — ✅ **marcas/workspaces** (criar, renomear, recolorir, reordenar, remover) e ✅ **labels** (criar, renomear, recolorir, remover), em `/admin`, gated por papel `admin`. Catálogos mutáveis (`brands/store`, `labels`); clients recebem por props/contexto. ⬜ status, prioridades e campos customizados (precisam generalizar o workflow hardcoded).
 
 **P1 — Paridade de uso** (Notion no dia a dia)
 

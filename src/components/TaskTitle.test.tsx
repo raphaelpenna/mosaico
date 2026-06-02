@@ -9,6 +9,7 @@ function renderTitle() {
   const mutate = vi.fn();
   const ctx: TaskBoardCtx = {
     today: "2026-06-01",
+    labels: [],
     mutate,
     remove: vi.fn(),
     selected: new Set(),

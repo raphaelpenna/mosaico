@@ -1,6 +1,5 @@
 "use client";
 
-import { LABELS } from "@/lib/labels";
 import { useTaskBoard } from "./task-board-context";
 
 /** Editor de labels: chips alternaveis; clicar adiciona/remove (otimista). */
@@ -11,7 +10,7 @@ export function LabelEditor({
   id: string;
   labelIds: string[];
 }) {
-  const { mutate } = useTaskBoard();
+  const { mutate, labels: catalog } = useTaskBoard();
   const set = new Set(labelIds);
 
   function toggle(labelId: string) {
@@ -23,7 +22,7 @@ export function LabelEditor({
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {LABELS.map((label) => {
+      {catalog.map((label) => {
         const on = set.has(label.id);
         return (
           <button

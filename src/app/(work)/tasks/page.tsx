@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth/session";
 import { getTaskSource } from "@/lib/tasks";
 import { resolveScopedBrand, scopedBrands } from "@/lib/brands/scope";
+import { listLabels } from "@/lib/labels";
 import { AddTask } from "@/components/AddTask";
 import { TaskBoard } from "@/components/TaskBoard";
 import type { TaskStatus } from "@/types";
@@ -89,6 +90,7 @@ export default async function TasksPage({
         today={today}
         groupByBrand={consolidated}
         brands={brands}
+        labels={listLabels()}
       />
     </div>
   );

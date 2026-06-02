@@ -1,6 +1,6 @@
 import type { TaskPriority } from "@/types";
 import { PEOPLE } from "@/lib/people";
-import { LABELS } from "@/lib/labels";
+import { listLabels } from "@/lib/labels";
 
 /**
  * Parsing leve do quick-add: extrai metadados de tokens no titulo e devolve o
@@ -74,7 +74,7 @@ export function parseQuickAdd(raw: string, today: Date): ParsedQuickAdd {
       }
     }
     if (word.startsWith("#") && word.length > 1) {
-      const label = matchByPrefix(LABELS, word.slice(1));
+      const label = matchByPrefix(listLabels(), word.slice(1));
       if (label && !labelIds.includes(label.id)) {
         labelIds.push(label.id);
         continue;
