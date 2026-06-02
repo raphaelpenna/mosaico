@@ -71,6 +71,15 @@ export interface Block {
   done?: boolean;
 }
 
+/** Comentário numa tarefa (autor + texto com @menções, carimbo do servidor). */
+export interface Comment {
+  id: string;
+  authorId: string;
+  text: string;
+  /** ISO timestamp definido no servidor */
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -88,6 +97,8 @@ export interface Task {
   blocks: Block[];
   /** valores de campos customizados, keyed por id do campo (ver lib/fields) */
   customFields: Record<string, CustomFieldValue>;
+  /** comentários (append-only; autor/data definidos no servidor) */
+  comments: Comment[];
   /** descricao curta (legado; o corpo rico vive em `blocks`) */
   description?: string;
   /** marca a que a tarefa pertence — escopada/validada no servidor */

@@ -13,6 +13,7 @@ import { LabelEditor } from "./LabelEditor";
 import { Subtasks } from "./Subtasks";
 import { BlockEditor } from "./BlockEditor";
 import { CustomFields } from "./CustomFields";
+import { Comments } from "./Comments";
 
 /**
  * Painel direito (split view / slide-over) com o detalhe da tarefa — a base da
@@ -164,6 +165,11 @@ export function TaskPanel({ task }: { task: Task }) {
           <div className="flex flex-col gap-1.5">
             <FieldLabel>Checklist</FieldLabel>
             <Subtasks id={task.id} subtasks={task.subtasks} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <FieldLabel>Comentários</FieldLabel>
+            <Comments task={task} />
           </div>
         </div>
 

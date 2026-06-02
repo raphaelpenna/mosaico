@@ -137,6 +137,16 @@ export async function deleteTaskAction(id: string): Promise<void> {
   revalidatePath("/tasks");
 }
 
+export async function addCommentAction(
+  id: string,
+  text: string,
+): Promise<void> {
+  if (!id || !text.trim()) return;
+  const { scope } = await getSession();
+  await getTaskSource().addComment(id, text, scope);
+  revalidatePath("/tasks");
+}
+
 /** Recria uma tarefa removida (undo do delete) PRESERVANDO o id e os campos. */
 export async function recreateTaskAction(task: Task): Promise<void> {
   if (!task?.id || !task?.brandId) return;

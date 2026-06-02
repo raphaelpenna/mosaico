@@ -108,6 +108,17 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("comentário: adicionar no painel e ver com @menção", async ({ page }) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
+  const panel = page.getByRole("dialog");
+  const text = `Revisar com @ana ${Date.now()}`;
+  await panel.getByRole("textbox", { name: "Novo comentário" }).fill(text);
+  await panel.getByRole("button", { name: "Comentar" }).click();
+  await expect(panel.getByText(/Revisar com/)).toBeVisible();
+  await expect(panel.getByText("@Ana")).toBeVisible();
+});
+
 test("visão Calendário renderiza a grade do mês", async ({ page }) => {
   await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Calendário" }).click();

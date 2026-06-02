@@ -138,6 +138,24 @@ describe("MockTaskSource", () => {
     expect(back?.title).toBe("Voltar");
   });
 
+  it("adiciona comentário com autor (dono) e data do servidor", async () => {
+    const t = await ts.createTask(
+      { title: "Comentar", brandId: "farm" },
+      scope,
+    );
+    const r = await ts.addComment(t.id, "  Olá @ana  ", scope);
+    expect(r?.comments).toHaveLength(1);
+    expect(r?.comments[0].authorId).toBe(scope.userId);
+    expect(r?.comments[0].text).toBe("Olá @ana");
+    expect(r?.comments[0].createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("não comenta em tarefa fora do escopo de marca", async () => {
+    const t = await ts.createTask({ title: "Fora", brandId: "fabula" }, scope);
+    const narrow: AccessScope = { ...scope, allowedBrandIds: ["farm"] };
+    expect(await ts.addComment(t.id, "oi", narrow)).toBeNull();
+  });
+
   it("remove uma tarefa do dono", async () => {
     const t = await ts.createTask({ title: "Apagar", brandId: "farm" }, scope);
     await ts.deleteTask(t.id, scope);

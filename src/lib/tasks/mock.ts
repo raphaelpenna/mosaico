@@ -23,7 +23,10 @@ function seedTasks(): Task[] {
   // Espalhadas por marca, status, prioridade, responsavel e labels para o demo
   // mostrar tudo funcionando desde o primeiro load.
   const seed: Array<
-    Omit<Task, "id" | "createdBy" | "subtasks" | "blocks" | "customFields">
+    Omit<
+      Task,
+      "id" | "createdBy" | "subtasks" | "blocks" | "customFields" | "comments"
+    >
   > = [
     {
       title: "Planejar reposição da loja flagship — inverno",
@@ -99,6 +102,7 @@ function seedTasks(): Task[] {
     subtasks: [],
     blocks: [],
     customFields: {},
+    comments: [],
     id: nextId(),
     createdBy: SEED_OWNER,
   }));
@@ -134,6 +138,7 @@ export class MockTaskSource implements TaskSource {
         subtasks: [...t.subtasks],
         blocks: [...t.blocks],
         customFields: { ...t.customFields },
+        comments: [...t.comments],
       }));
   }
 
@@ -153,6 +158,7 @@ export class MockTaskSource implements TaskSource {
       subtasks: [],
       blocks: [],
       customFields: {},
+      comments: [],
       brandId: input.brandId,
       createdBy: scope.userId,
     };
@@ -163,6 +169,7 @@ export class MockTaskSource implements TaskSource {
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
+      comments: [...task.comments],
     };
   }
 
@@ -204,6 +211,7 @@ export class MockTaskSource implements TaskSource {
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
+      comments: [...task.comments],
     };
   }
 
@@ -226,6 +234,32 @@ export class MockTaskSource implements TaskSource {
       subtasks: [...task.subtasks],
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
+      comments: [...task.comments],
     });
+  }
+
+  async addComment(
+    id: string,
+    text: string,
+    scope: AccessScope,
+  ): Promise<Task | null> {
+    const clean = text.trim();
+    if (!clean) return null;
+    const task = accessibleTask(id, scope);
+    if (!task) return null;
+    task.comments.push({
+      id: nextId("c"),
+      authorId: scope.userId,
+      text: clean,
+      createdAt: new Date().toISOString(),
+    });
+    return {
+      ...task,
+      labelIds: [...task.labelIds],
+      subtasks: [...task.subtasks],
+      blocks: [...task.blocks],
+      customFields: { ...task.customFields },
+      comments: [...task.comments],
+    };
   }
 }

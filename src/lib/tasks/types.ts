@@ -28,6 +28,12 @@ export interface TaskSource {
     patch: TaskPatch,
     scope: AccessScope,
   ): Promise<Task | null>;
+  /** Adiciona um comentário (autor = dono da sessão, data no servidor). */
+  addComment(
+    id: string,
+    text: string,
+    scope: AccessScope,
+  ): Promise<Task | null>;
   /** Remove uma tarefa do dono. */
   deleteTask(id: string, scope: AccessScope): Promise<void>;
   /**

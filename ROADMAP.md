@@ -30,7 +30,7 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 
 - ✅ Visões: **Lista / Quadro / Tabela / Calendário** (toggle + `?view=`). Tabela = base-de-dados (campos núcleo inline + campos customizados como colunas); Calendário = grade do mês por `dueDate`, navegável, com "sem prazo" no rodapé. Estado por visão persiste na URL.
 - 🟡 Agrupamentos — status/prioridade/responsável/marca ✅; ⬜ por label, por prazo (Hoje/Semana/Mês/Atrasadas), por campo customizado, **aninhado + swimlanes**.
-- 🟡 **Subtarefas/checklists** (básico ✅; falta progresso pai-filho), ⬜ **comentários + @menções**, ⬜ **templates de tarefa**, ⬜ capa/ícone.
+- 🟡 **Subtarefas/checklists** (básico ✅; falta progresso pai-filho), ✅ **comentários + @menções** (no painel; autor/data no servidor, @ resolvidas contra o catálogo de pessoas), ⬜ **templates de tarefa**, ⬜ capa/ícone.
 - ⬜ Admin v2 — usuários e atribuição a marcas; preferências padrão.
 
 **P2 — Profundidade & diferenciação**
