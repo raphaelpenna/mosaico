@@ -176,6 +176,20 @@ test("visão Galeria renderiza cards e abre o painel ao clicar", async ({
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
+test("visão Linha do tempo posiciona tarefas com prazo na régua", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Linha do tempo" }).click();
+  // A tarefa com prazo vira um marcador clicável que abre o painel.
+  const marker = page.getByRole("button", {
+    name: /Abrir detalhes: Briefing da campanha de inverno/,
+  });
+  await expect(marker).toBeVisible();
+  await marker.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
 test("visão Carga de trabalho agrega tarefas por responsável", async ({
   page,
 }) => {

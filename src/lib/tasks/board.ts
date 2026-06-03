@@ -289,3 +289,100 @@ export function buildWorkload(
       open(b) - open(a) || b.total - a.total || a.name.localeCompare(b.name),
   );
 }
+
+// ---- linha do tempo (Gantt simples sobre dueDate) --------------------------
+
+export interface TimelineBar {
+  task: Task;
+  /** posição horizontal (0–100%) do prazo na régua */
+  leftPct: number;
+  /** prazo anterior a hoje e tarefa não-feita */
+  overdue: boolean;
+}
+export interface TimelineMonth {
+  label: string;
+  leftPct: number;
+}
+export interface Timeline {
+  bars: TimelineBar[];
+  noDate: Task[];
+  /** posição de "hoje" na régua (0–100%, clampado) */
+  todayPct: number;
+  months: TimelineMonth[];
+}
+
+const MONTH_ABBR = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
+
+/** Dia inteiro (epoch/86400000) de uma data ISO — evita fuso/horário. */
+function isoDay(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+}
+
+/**
+ * Layout da linha do tempo: posiciona cada tarefa com prazo numa régua que vai
+ * do menor prazo (ou hoje) ao maior, com folga de 3 dias e ticks no 1º de cada
+ * mês. Tarefas sem prazo saem em `noDate`. PURA — testável em node.
+ */
+export function buildTimeline(tasks: Task[], today: string): Timeline {
+  const dated = tasks
+    .filter((t) => t.dueDate)
+    .sort((a, b) => (a.dueDate! < b.dueDate! ? -1 : 1));
+  const noDate = tasks.filter((t) => !t.dueDate);
+  const t0 = isoDay(today);
+  if (dated.length === 0)
+    return { bars: [], noDate, todayPct: 0, months: [] };
+
+  const dueDays = dated.map((t) => isoDay(t.dueDate!));
+  const start = Math.min(t0, ...dueDays) - 3;
+  const end = Math.max(t0, ...dueDays) + 3;
+  const span = Math.max(1, end - start);
+  const pct = (day: number) => ((day - start) / span) * 100;
+
+  const bars: TimelineBar[] = dated.map((t) => ({
+    task: t,
+    leftPct: pct(isoDay(t.dueDate!)),
+    overdue: t.status !== "done" && t.dueDate! < today,
+  }));
+
+  // Ticks no 1º de cada mês dentro do intervalo.
+  const months: TimelineMonth[] = [];
+  const startDate = new Date(start * 86400000);
+  let y = startDate.getUTCFullYear();
+  let m = startDate.getUTCMonth();
+  // Itera do mês que contém `start`. O 1º mês pode começar antes da régua
+  // (pct < 0) — clampa em 0 para o rótulo aparecer mesmo num intervalo curto.
+  for (;;) {
+    const tick = Math.floor(Date.UTC(y, m, 1) / 86400000);
+    if (tick > end) break;
+    months.push({
+      label: `${MONTH_ABBR[m]} ${y}`,
+      leftPct: Math.max(0, pct(tick)),
+    });
+    m += 1;
+    if (m > 11) {
+      m = 0;
+      y += 1;
+    }
+  }
+
+  return {
+    bars,
+    noDate,
+    todayPct: Math.max(0, Math.min(100, pct(t0))),
+    months,
+  };
+}

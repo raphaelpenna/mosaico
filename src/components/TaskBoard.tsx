@@ -32,6 +32,7 @@ import { TaskTable } from "./TaskTable";
 import { CalendarView } from "./CalendarView";
 import { GalleryView } from "./GalleryView";
 import { WorkloadView } from "./WorkloadView";
+import { TimelineView } from "./TimelineView";
 import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
@@ -88,14 +89,21 @@ export function TaskBoard({
     () => (params.get("group") as GroupBy) || defaultGroup,
   );
   const [view, setView] = useState<
-    "list" | "board" | "table" | "calendar" | "gallery" | "workload"
+    | "list"
+    | "board"
+    | "table"
+    | "calendar"
+    | "gallery"
+    | "workload"
+    | "timeline"
   >(() => {
     const v = params.get("view");
     return v === "board" ||
       v === "table" ||
       v === "calendar" ||
       v === "gallery" ||
-      v === "workload"
+      v === "workload" ||
+      v === "timeline"
       ? v
       : "list";
   });
@@ -241,7 +249,9 @@ export function TaskBoard({
                 ? "gallery"
                 : v === "gallery"
                   ? "workload"
-                  : "list",
+                  : v === "workload"
+                    ? "timeline"
+                    : "list",
       );
     const onClear = () => {
       setQuery("");
@@ -433,6 +443,11 @@ export function TaskBoard({
               onClick={() => setView("workload")}
               label="Carga"
             />
+            <ViewButton
+              on={view === "timeline"}
+              onClick={() => setView("timeline")}
+              label="Linha do tempo"
+            />
           </div>
         </div>
 
@@ -496,6 +511,8 @@ export function TaskBoard({
           <GalleryView tasks={filtered} />
         ) : view === "workload" ? (
           <WorkloadView tasks={filtered} />
+        ) : view === "timeline" ? (
+          <TimelineView tasks={filtered} />
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (

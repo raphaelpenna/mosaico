@@ -4,6 +4,7 @@ import {
   applyPatch,
   boardReducer,
   buildGroups,
+  buildTimeline,
   buildWorkload,
   filterTasks,
   sortTasks,
@@ -317,5 +318,44 @@ describe("buildWorkload", () => {
     // Bruno (2 abertas) antes de Ana e do "Sem responsável" (1 cada).
     expect(rows[0].name).toBe("Bruno");
     expect(rows.some((r) => r.assigneeId === null && r.name === "Sem responsável")).toBe(true);
+  });
+});
+
+describe("buildTimeline", () => {
+  it("separa tarefas sem prazo e marca atrasadas", () => {
+    const today = "2026-06-10";
+    const ts = [
+      task({ id: "atr", dueDate: "2026-06-01", status: "todo" }),
+      task({ id: "fut", dueDate: "2026-06-20", status: "todo" }),
+      task({ id: "feita", dueDate: "2026-06-01", status: "done" }),
+      task({ id: "sem" }),
+    ];
+    const tl = buildTimeline(ts, today);
+    expect(tl.noDate.map((t) => t.id)).toEqual(["sem"]);
+    expect(tl.bars.map((b) => b.task.id)).toEqual(["atr", "feita", "fut"]); // ordenadas por prazo
+    expect(tl.bars.find((b) => b.task.id === "atr")!.overdue).toBe(true);
+    expect(tl.bars.find((b) => b.task.id === "feita")!.overdue).toBe(false); // feita não atrasa
+  });
+
+  it("posiciona o prazo mais cedo à esquerda do mais tarde", () => {
+    const tl = buildTimeline(
+      [
+        task({ id: "cedo", dueDate: "2026-06-05" }),
+        task({ id: "tarde", dueDate: "2026-06-25" }),
+      ],
+      "2026-06-10",
+    );
+    const cedo = tl.bars.find((b) => b.task.id === "cedo")!;
+    const tarde = tl.bars.find((b) => b.task.id === "tarde")!;
+    expect(cedo.leftPct).toBeLessThan(tarde.leftPct);
+    expect(tl.todayPct).toBeGreaterThan(0);
+    expect(tl.todayPct).toBeLessThan(100);
+    expect(tl.months.length).toBeGreaterThan(0);
+  });
+
+  it("sem nenhuma tarefa com prazo, devolve só noDate", () => {
+    const tl = buildTimeline([task({ id: "a" }), task({ id: "b" })], "2026-06-10");
+    expect(tl.bars).toEqual([]);
+    expect(tl.noDate.map((t) => t.id)).toEqual(["a", "b"]);
   });
 });

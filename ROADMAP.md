@@ -39,8 +39,9 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
   (`/docs`, escopo dono + marca), notas pessoais (`/notes`, escopo só do dono) e
   **link bidirecional tarefa↔documento** (vínculo no painel + backlinks no doc,
   com deep-link `?task=`). Mesmo editor de blocos em tarefa, doc e nota.
-- 🟡 Visões: **Galeria** ✅ (cards com capa/ícone) · **Carga de trabalho** ✅
-  (agregação por responsável). _Falta: **Timeline/Gantt**._
+- ✅ Visões completas: Lista · Quadro · Tabela · Calendário · **Galeria** ·
+  **Carga de trabalho** · **Linha do tempo (Gantt)** — todas alternáveis na
+  toolbar / `⌘K` e persistidas em `?view=`.
 - ⬜ **Fórmulas, rollups e relações**.
 - ⬜ Integrações: **Slack** + **dados Azzas/BigQuery**.
 
