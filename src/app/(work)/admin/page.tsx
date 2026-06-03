@@ -3,9 +3,11 @@ import { getSession } from "@/lib/auth/session";
 import { listBrands } from "@/lib/brands/store";
 import { listLabels } from "@/lib/labels";
 import { listFields } from "@/lib/fields";
+import { listTemplates } from "@/lib/templates";
 import { AdminBrands } from "@/components/AdminBrands";
 import { AdminLabels } from "@/components/AdminLabels";
 import { AdminFields } from "@/components/AdminFields";
+import { AdminTemplates } from "@/components/AdminTemplates";
 
 /**
  * Admin v1 — gestão de marcas/workspaces (CRUD). Acesso só para papel admin
@@ -18,6 +20,7 @@ export default async function AdminPage() {
   const brands = listBrands();
   const labels = listLabels();
   const fields = listFields();
+  const templates = listTemplates();
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-8">
@@ -48,6 +51,13 @@ export default async function AdminPage() {
           Campos customizados ({fields.length})
         </h2>
         <AdminFields fields={fields} brands={brands} />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">
+          Templates de tarefa ({templates.length})
+        </h2>
+        <AdminTemplates templates={templates} brands={brands} />
       </section>
     </div>
   );

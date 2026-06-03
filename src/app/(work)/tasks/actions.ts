@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
 import { getTaskSource } from "@/lib/tasks";
 import { parseQuickAdd } from "@/lib/tasks/quickadd";
+import { getTemplate } from "@/lib/templates";
 import { isPerson } from "@/lib/people";
 import { isLabel } from "@/lib/labels";
 import type {
@@ -117,6 +118,41 @@ export async function createTaskAction(formData: FormData): Promise<void> {
     },
     scope,
   );
+  revalidatePath("/tasks");
+}
+
+/** Cria uma tarefa a partir de um template (preset de prioridade/labels/checklist). */
+export async function createFromTemplateAction(
+  templateId: string,
+  brandId: string,
+): Promise<void> {
+  if (!templateId || !brandId) return;
+  const tpl = getTemplate(templateId);
+  if (!tpl) return;
+  const { scope } = await getSession();
+  const source = getTaskSource();
+  const created = await source.createTask(
+    {
+      title: tpl.name,
+      brandId,
+      priority: tpl.priority,
+      labelIds: tpl.labelIds,
+    },
+    scope,
+  );
+  if (tpl.subtaskTitles.length) {
+    await source.updateTask(
+      created.id,
+      {
+        subtasks: tpl.subtaskTitles.map((title) => ({
+          id: crypto.randomUUID(),
+          title,
+          done: false,
+        })),
+      },
+      scope,
+    );
+  }
   revalidatePath("/tasks");
 }
 

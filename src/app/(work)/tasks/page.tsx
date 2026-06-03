@@ -3,7 +3,9 @@ import { getTaskSource } from "@/lib/tasks";
 import { resolveScopedBrand, scopedBrands } from "@/lib/brands/scope";
 import { listLabels } from "@/lib/labels";
 import { listFields } from "@/lib/fields";
+import { templatesForBrand } from "@/lib/templates";
 import { AddTask } from "@/components/AddTask";
+import { TemplatePicker } from "@/components/TemplatePicker";
 import { TaskBoard } from "@/components/TaskBoard";
 import type { TaskStatus } from "@/types";
 
@@ -85,7 +87,17 @@ export default async function TasksPage({
         )}
       </header>
 
-      {!consolidated && activeBrand && <AddTask brandId={activeBrand.id} />}
+      {!consolidated && activeBrand && (
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <AddTask brandId={activeBrand.id} />
+          </div>
+          <TemplatePicker
+            templates={templatesForBrand(activeBrand.id)}
+            brandId={activeBrand.id}
+          />
+        </div>
+      )}
       <TaskBoard
         tasks={tasks}
         today={today}

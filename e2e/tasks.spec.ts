@@ -108,6 +108,13 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("template: criar tarefa a partir de 'Nova campanha'", async ({ page }) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Usar template" }).click();
+  await page.getByRole("option", { name: "Nova campanha" }).click();
+  await expect(page.getByText("Nova campanha", { exact: true })).toBeVisible();
+});
+
 test("agrupar por label cria grupos por label", async ({ page }) => {
   await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
   await page.waitForTimeout(400);

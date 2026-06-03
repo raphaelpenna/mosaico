@@ -15,6 +15,13 @@ import {
   updateField,
   type FieldType,
 } from "@/lib/fields";
+import {
+  createTemplate,
+  deleteTemplate,
+  updateTemplate,
+} from "@/lib/templates";
+import { isLabel } from "@/lib/labels";
+import type { TaskPriority } from "@/types";
 
 /**
  * Server actions do Admin. Toda mutação exige papel "admin" (verificado na
@@ -130,5 +137,45 @@ export async function updateFieldAction(
 export async function deleteFieldAction(id: string): Promise<void> {
   if (!id || !(await assertAdmin())) return;
   deleteField(id);
+  revalidatePath("/", "layout");
+}
+
+// ---- Templates de tarefa --------------------------------------------------
+
+const PRIORITIES: readonly TaskPriority[] = ["low", "medium", "high", "urgent"];
+const csv = (s: string) =>
+  s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+export async function createTemplateAction(formData: FormData): Promise<void> {
+  if (!(await assertAdmin())) return;
+  const name = String(formData.get("name") ?? "");
+  if (!name.trim()) return;
+  const brandId = String(formData.get("brandId") ?? "");
+  const priority = String(formData.get("priority") ?? "") as TaskPriority;
+  createTemplate({
+    name,
+    brandId: brandId || undefined,
+    priority: PRIORITIES.includes(priority) ? priority : undefined,
+    labelIds: csv(String(formData.get("labels") ?? "")).filter(isLabel),
+    subtaskTitles: csv(String(formData.get("checklist") ?? "")),
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function updateTemplateAction(
+  id: string,
+  patch: { name?: string },
+): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  if (typeof patch.name === "string") updateTemplate(id, { name: patch.name });
+  revalidatePath("/", "layout");
+}
+
+export async function deleteTemplateAction(id: string): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  deleteTemplate(id);
   revalidatePath("/", "layout");
 }
