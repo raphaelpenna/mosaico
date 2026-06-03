@@ -7,6 +7,7 @@ import { parseQuickAdd } from "@/lib/tasks/quickadd";
 import { getTemplate } from "@/lib/templates";
 import { isPerson } from "@/lib/people";
 import { isLabel } from "@/lib/labels";
+import { getField } from "@/lib/fields";
 import { sanitizeBlocks } from "@/lib/blocks";
 import type {
   CustomFieldValue,
@@ -79,6 +80,8 @@ function sanitize(patch: TaskPatch): TaskPatch {
   if (patch.customFields && typeof patch.customFields === "object") {
     const cf: Record<string, CustomFieldValue> = {};
     for (const [k, v] of Object.entries(patch.customFields)) {
+      // Campos calculados (fórmula) não têm valor armazenado — ignora.
+      if (getField(k)?.type === "formula") continue;
       if (typeof v === "string") cf[k] = v;
       else if (Array.isArray(v))
         cf[k] = v.filter((x) => typeof x === "string").map(String);

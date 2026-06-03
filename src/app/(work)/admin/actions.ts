@@ -13,7 +13,9 @@ import {
   createField,
   deleteField,
   updateField,
+  FORMULA_KINDS,
   type FieldType,
+  type FormulaKind,
 } from "@/lib/fields";
 import {
   createTemplate,
@@ -109,6 +111,7 @@ const FIELD_TYPES: readonly FieldType[] = [
   "checkbox",
   "select",
   "multiselect",
+  "formula",
 ];
 
 export async function createFieldAction(formData: FormData): Promise<void> {
@@ -118,11 +121,15 @@ export async function createFieldAction(formData: FormData): Promise<void> {
   const brandId = String(formData.get("brandId") ?? "");
   const optionsRaw = String(formData.get("options") ?? "");
   if (!name.trim() || !FIELD_TYPES.includes(type)) return;
+  const formulaRaw = String(formData.get("formula") ?? "") as FormulaKind;
+  const formula = FORMULA_KINDS.includes(formulaRaw) ? formulaRaw : undefined;
+  // Fórmula precisa de um cálculo válido.
+  if (type === "formula" && !formula) return;
   const options = optionsRaw
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  createField({ name, type, brandId: brandId || undefined, options });
+  createField({ name, type, brandId: brandId || undefined, options, formula });
   revalidatePath("/", "layout");
 }
 

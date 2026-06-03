@@ -2,6 +2,7 @@
 
 import type { CustomFieldValue, FieldDef, Task } from "@/types";
 import { sortTasks } from "@/lib/tasks/board";
+import { evalFormula } from "@/lib/formula";
 import { useTaskBoard } from "./task-board-context";
 import { StatusButton } from "./StatusButton";
 import { TaskTitle } from "./TaskTitle";
@@ -28,7 +29,7 @@ const TH =
 const TD = "border-border border-t px-2 py-1.5 align-middle";
 
 export function TaskTable({ tasks }: { tasks: Task[] }) {
-  const { fields, openTask } = useTaskBoard();
+  const { fields, openTask, today } = useTaskBoard();
   // Só campos globais viram coluna (consistentes entre marcas).
   const cols = fields.filter((f) => !f.brandId);
   const rows = [...tasks].sort(sortTasks);
@@ -87,13 +88,22 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
               <td className={TD}>
                 <LabelChips labelIds={t.labelIds} className="flex flex-wrap" />
               </td>
-              {cols.map((f) => (
-                <td key={f.id} className={`${TD} text-muted whitespace-nowrap`}>
-                  {fieldValue(f, t.customFields[f.id]) || (
-                    <span className="text-faint">—</span>
-                  )}
-                </td>
-              ))}
+              {cols.map((f) => {
+                const val =
+                  f.type === "formula"
+                    ? f.formula
+                      ? evalFormula(f.formula, t, today)
+                      : ""
+                    : fieldValue(f, t.customFields[f.id]);
+                return (
+                  <td
+                    key={f.id}
+                    className={`${TD} text-muted whitespace-nowrap`}
+                  >
+                    {val || <span className="text-faint">—</span>}
+                  </td>
+                );
+              })}
               <td className={TD}>
                 <button
                   type="button"

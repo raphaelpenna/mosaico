@@ -12,7 +12,39 @@ export type FieldType =
   | "url"
   | "checkbox"
   | "select"
-  | "multiselect";
+  | "multiselect"
+  | "formula";
+
+/**
+ * Campos CALCULADOS (fórmula/rollup): conjunto fixo de derivações da tarefa —
+ * não há parser de expressão livre. `daysUntilDue` é fórmula sobre o prazo; os
+ * demais são rollups (agregam subtarefas, comentários, blocos, docs vinculados).
+ */
+export type FormulaKind =
+  | "daysUntilDue"
+  | "subtaskProgress"
+  | "subtaskPercent"
+  | "commentCount"
+  | "linkedDocCount"
+  | "blockCount";
+
+export const FORMULA_KINDS: readonly FormulaKind[] = [
+  "daysUntilDue",
+  "subtaskProgress",
+  "subtaskPercent",
+  "commentCount",
+  "linkedDocCount",
+  "blockCount",
+];
+
+export const FORMULA_LABEL: Record<FormulaKind, string> = {
+  daysUntilDue: "Dias até o prazo",
+  subtaskProgress: "Subtarefas (feitas/total)",
+  subtaskPercent: "Subtarefas (% concluído)",
+  commentCount: "Nº de comentários",
+  linkedDocCount: "Nº de docs vinculados",
+  blockCount: "Nº de blocos",
+};
 
 export interface FieldDef {
   id: string;
@@ -22,6 +54,8 @@ export interface FieldDef {
   brandId?: string;
   /** opções para select/multiselect */
   options?: string[];
+  /** cálculo, quando type === "formula" */
+  formula?: FormulaKind;
 }
 
 export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
@@ -33,12 +67,15 @@ export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
   checkbox: "Caixa",
   select: "Seleção",
   multiselect: "Multisseleção",
+  formula: "Fórmula",
 };
 
 const SEED_FIELDS: FieldDef[] = [
   { id: "colecao", name: "Coleção", type: "select", options: ["Inverno", "Verão", "Primavera", "Outono"] }, // prettier-ignore
   { id: "orcamento", name: "Orçamento", type: "currency" },
   { id: "referencia", name: "Referência", type: "url" },
+  { id: "dias-prazo", name: "Dias p/ prazo", type: "formula", formula: "daysUntilDue" }, // prettier-ignore
+  { id: "docs-vinculados", name: "Docs", type: "formula", formula: "linkedDocCount" }, // prettier-ignore
 ];
 
 const fields: FieldDef[] = SEED_FIELDS.map((f) => ({ ...f }));
@@ -81,11 +118,14 @@ export interface NewFieldInput {
   type: FieldType;
   brandId?: string;
   options?: string[];
+  formula?: FormulaKind;
 }
 
 export function createField(input: NewFieldInput): FieldDef | null {
   const name = input.name.trim();
   if (!name) return null;
+  // Fórmula exige um cálculo válido; sem ele, não cria.
+  if (input.type === "formula" && !input.formula) return null;
   const def: FieldDef = {
     id: slugify(name),
     name,
@@ -95,6 +135,7 @@ export function createField(input: NewFieldInput): FieldDef | null {
       input.type === "select" || input.type === "multiselect"
         ? (input.options ?? []).filter(Boolean)
         : undefined,
+    formula: input.type === "formula" ? input.formula : undefined,
   };
   fields.push(def);
   return { ...def };

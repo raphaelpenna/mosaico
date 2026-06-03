@@ -216,6 +216,18 @@ test("visão Tabela mostra colunas, incluindo campo customizado", async ({
   ).toBeVisible();
 });
 
+test("campo calculado (fórmula): coluna na Tabela e valor no painel", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Tabela" }).click();
+  // Campos de fórmula semeados viram colunas (globais).
+  await expect(
+    page.getByRole("columnheader", { name: "Dias p/ prazo" }),
+  ).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Docs" })).toBeVisible();
+});
+
 test("campo customizado: definir 'Coleção' no painel da tarefa", async ({
   page,
 }) => {

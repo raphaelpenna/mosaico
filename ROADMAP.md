@@ -42,7 +42,11 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 - ✅ Visões completas: Lista · Quadro · Tabela · Calendário · **Galeria** ·
   **Carga de trabalho** · **Linha do tempo (Gantt)** — todas alternáveis na
   toolbar / `⌘K` e persistidas em `?view=`.
-- ⬜ **Fórmulas, rollups e relações**.
+- ✅ **Fórmulas, rollups e relações** — novo tipo de campo `formula` (cálculo
+  fixo, sem parser livre): dias até o prazo, % / contagem de subtarefas (rollup),
+  nº de comentários, blocos e **docs vinculados** (rollup da relação tarefa↔doc).
+  Read-only na Tabela e no painel; criável no Admin. _(Relações tarefa↔doc já
+  na linha de conhecimento acima.)_
 - ⬜ Integrações: **Slack** + **dados Azzas/BigQuery**.
 
 **Fora de escopo (PRD):** SSO/provisionamento, RBAC granular, auditoria/versões,

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CustomFieldValue, FieldDef, Task } from "@/types";
 import { useTaskBoard } from "./task-board-context";
 import { SelectMenu } from "./ui/SelectMenu";
+import { evalFormula } from "@/lib/formula";
 
 /**
  * Renderiza os campos customizados aplicáveis à marca da tarefa (globais + da
@@ -106,7 +107,7 @@ function ScalarInput({
 }
 
 export function CustomFields({ task }: { task: Task }) {
-  const { fields, mutate } = useTaskBoard();
+  const { fields, mutate, today } = useTaskBoard();
   const defs = fields.filter((f) => !f.brandId || f.brandId === task.brandId);
   if (defs.length === 0) return null;
 
@@ -125,6 +126,18 @@ export function CustomFields({ task }: { task: Task }) {
       </span>
       {defs.map((def) => {
         const raw = task.customFields[def.id];
+        if (def.type === "formula") {
+          const out = def.formula
+            ? evalFormula(def.formula, task, today)
+            : "";
+          return (
+            <Row key={def.id} label={def.name}>
+              <span className={`text-sm ${out ? "text-fg" : "text-faint"}`}>
+                {out || "—"}
+              </span>
+            </Row>
+          );
+        }
         if (def.type === "select") {
           const current = typeof raw === "string" ? raw : "";
           return (

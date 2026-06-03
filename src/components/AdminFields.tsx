@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { Brand, FieldDef } from "@/types";
-import { FIELD_TYPE_LABEL } from "@/lib/fields";
+import { FIELD_TYPE_LABEL, FORMULA_LABEL } from "@/lib/fields";
 import {
   createFieldAction,
   deleteFieldAction,
@@ -136,6 +136,18 @@ export function AdminFields({
           aria-label="Opções (seleção)"
           className="placeholder:text-faint border-border min-w-32 rounded-md border bg-transparent px-2 py-1 text-sm outline-none"
         />
+        <select
+          name="formula"
+          aria-label="Cálculo (fórmula)"
+          defaultValue="daysUntilDue"
+          className="border-border text-muted rounded-md border bg-transparent px-2 py-1 text-sm"
+        >
+          {Object.entries(FORMULA_LABEL).map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
         <Button type="submit" variant="primary" size="sm">
           Adicionar campo
         </Button>
