@@ -73,6 +73,7 @@ export function Sidebar({
   const pathname = usePathname();
   const onTasks = pathname === "/tasks" || pathname === "/";
   const onDocs = pathname.startsWith("/docs");
+  const onNotes = pathname.startsWith("/notes");
   // A marca ativa destaca em ambas as superfícies (tarefas e docs).
   const active = onTasks || onDocs ? params.get("brand") || defaultBrandId : "";
   // Links de marca seguem a superfície atual (trocar de marca não muda a tela).
@@ -193,6 +194,32 @@ export function Sidebar({
             }
           >
             Base de conhecimento
+          </NavLink>
+          <NavLink
+            href="/notes"
+            active={onNotes}
+            collapsed={collapsed}
+            title="Minhas notas"
+            icon={
+              <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden>
+                <path
+                  d="M3.5 2.5h7l2 2v9h-9v-11Z M10 2.5V5h2.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M5.5 7.5h5M5.5 10h5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                />
+              </svg>
+            }
+          >
+            Minhas notas
           </NavLink>
         </div>
 

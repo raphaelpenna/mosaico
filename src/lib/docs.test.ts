@@ -5,6 +5,7 @@ import {
   deleteDoc,
   getDoc,
   listDocs,
+  listNotes,
   updateDoc,
 } from "./docs";
 
@@ -17,7 +18,7 @@ const owner: AccessScope = {
 const other: AccessScope = {
   userId: "u-other",
   allowedBrandIds: ["animale"],
-  role: "member",
+  role: "editor",
 };
 
 describe("docs store (base de conhecimento por marca)", () => {
@@ -84,5 +85,31 @@ describe("docs store (base de conhecimento por marca)", () => {
 
   it("listagem retorna [] para marca fora do escopo", () => {
     expect(listDocs(other, "farm")).toEqual([]);
+  });
+});
+
+describe("notas pessoais (docs sem marca)", () => {
+  it("cria uma nota sem marca e a lista em listNotes", () => {
+    const n = createDoc(null, owner)!;
+    expect(n.brandId).toBeUndefined();
+    expect(listNotes(owner).some((x) => x.id === n.id)).toBe(true);
+    // Nota pessoal não vaza na base de conhecimento de marca nenhuma.
+    expect(listDocs(owner, "farm").some((x) => x.id === n.id)).toBe(false);
+  });
+
+  it("nota é visível ao dono independ. de escopo de marca", () => {
+    const n = createDoc(null, owner)!;
+    // 'owner' tem escopo de marca; mas a nota não depende disso.
+    expect(getDoc(n.id, owner)).toBeDefined();
+    // Outro usuário (não dono) não vê a nota.
+    expect(getDoc(n.id, other)).toBeUndefined();
+    expect(listNotes(other).some((x) => x.id === n.id)).toBe(false);
+  });
+
+  it("notas de um dono não aparecem para outro dono", () => {
+    const mine = createDoc(null, owner)!;
+    const theirs = createDoc(null, other)!;
+    expect(listNotes(owner).some((x) => x.id === theirs.id)).toBe(false);
+    expect(listNotes(other).some((x) => x.id === mine.id)).toBe(false);
   });
 });

@@ -1,13 +1,16 @@
 import type { AccessScope, Block } from "@/types";
 
 /**
- * Base de conhecimento — documentos por marca. Store EM MEMÓRIA (mock), escopado
- * por dono (createdBy) E por marca (mesma regra de acesso das tarefas). Corpo em
- * blocos, reusando o mesmo editor das tarefas. Reseta no restart.
+ * Documentos em blocos. Store EM MEMÓRIA (mock), reusando o editor das tarefas.
+ * Dois sabores, mesma estrutura:
+ *  - base de conhecimento da marca (`brandId` setado) — escopo dono + marca;
+ *  - nota pessoal (`brandId` ausente) — escopo só por dono.
+ * Reseta no restart.
  */
 export interface Doc {
   id: string;
-  brandId: string;
+  /** ausente = nota pessoal (escopo só por dono). */
+  brandId?: string;
   title: string;
   icon?: string;
   blocks: Block[];
@@ -29,6 +32,14 @@ function seedDocs(): Doc[] {
         { id: "d3", type: "bullet", text: "Sempre citar a coleção" }, // MOCK
       ],
     },
+    {
+      title: "Minhas anotações da semana", // MOCK — nota pessoal (sem marca)
+      icon: "📝",
+      blocks: [
+        { id: "n1", type: "todo", done: false, text: "Revisar briefings" }, // MOCK
+        { id: "n2", type: "todo", done: true, text: "Alinhar com o time" }, // MOCK
+      ],
+    },
   ];
   return seed.map((d) => ({
     ...d,
@@ -40,11 +51,15 @@ function seedDocs(): Doc[] {
 
 const docs: Doc[] = seedDocs();
 
-/** Doc do dono E com a marca no escopo (mesma regra de escrita das tarefas). */
+/**
+ * Doc do dono; se for de marca, a marca também tem de estar no escopo (mesma
+ * regra de escrita das tarefas). Nota pessoal (sem marca) basta ser do dono.
+ */
 function accessible(id: string, scope: AccessScope): Doc | undefined {
   const d = docs.find((x) => x.id === id && x.createdBy === scope.userId);
   if (!d) return undefined;
-  return scope.allowedBrandIds.includes(d.brandId) ? d : undefined;
+  if (d.brandId && !scope.allowedBrandIds.includes(d.brandId)) return undefined;
+  return d;
 }
 
 function clone(d: Doc): Doc {
@@ -58,16 +73,27 @@ export function listDocs(scope: AccessScope, brandId: string): Doc[] {
     .map(clone);
 }
 
+/** Notas pessoais do dono (sem marca). */
+export function listNotes(scope: AccessScope): Doc[] {
+  return docs
+    .filter((d) => d.createdBy === scope.userId && !d.brandId)
+    .map(clone);
+}
+
 export function getDoc(id: string, scope: AccessScope): Doc | undefined {
   const d = accessible(id, scope);
   return d ? clone(d) : undefined;
 }
 
-export function createDoc(brandId: string, scope: AccessScope): Doc | null {
-  if (!scope.allowedBrandIds.includes(brandId)) return null;
+/** Cria um doc de marca (`brandId` setado) ou uma nota pessoal (`brandId` null). */
+export function createDoc(
+  brandId: string | null,
+  scope: AccessScope,
+): Doc | null {
+  if (brandId && !scope.allowedBrandIds.includes(brandId)) return null;
   const doc: Doc = {
     id: `d${++seq}`,
-    brandId,
+    ...(brandId ? { brandId } : {}),
     title: "Sem título",
     blocks: [],
     createdBy: scope.userId,

@@ -9,6 +9,7 @@ import { SelectMenu } from "./ui/SelectMenu";
 import { Button } from "./ui/Button";
 import {
   createDocAction,
+  createNoteAction,
   deleteDocAction,
   updateDocBlocksAction,
   updateDocIconAction,
@@ -21,29 +22,35 @@ const EMOJIS = [
 ]; // prettier-ignore
 
 /**
- * Superfície da base de conhecimento: lista de documentos da marca + editor.
- * A seleção mora na URL (?doc=) — sobrevive a reload e é compartilhável. Edições
- * vão por server action (o store revalida escopo). O corpo reusa o BlockEditor.
+ * Superfície de documentos: lista + editor. Serve tanto a base de conhecimento
+ * da marca (`brandId` setado, `basePath="/docs"`) quanto as notas pessoais
+ * (`brandId=null`, `basePath="/notes"`). A seleção mora na URL (?doc=) — sobrevive
+ * a reload e é compartilhável. Edições vão por server action (o store revalida
+ * escopo). O corpo reusa o BlockEditor.
  */
 export function DocsView({
   docs,
   brandId,
   selectedId,
+  basePath = "/docs",
 }: {
   docs: Doc[];
-  brandId: string;
+  brandId: string | null;
   selectedId?: string;
+  basePath?: string;
 }) {
   const router = useRouter();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const isNotes = brandId === null;
 
-  // Preserva ?brand= ao navegar entre lista e documento.
+  // Preserva os params (ex.: ?brand=) ao navegar entre lista e documento.
   function go(docId?: string) {
     const next = new URLSearchParams(params.toString());
     if (docId) next.set("doc", docId);
     else next.delete("doc");
-    router.push(`/docs?${next.toString()}`);
+    const qs = next.toString();
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   }
 
   const selected = selectedId
@@ -55,6 +62,7 @@ export function DocsView({
       <DocEditor
         doc={selected}
         pending={pending}
+        backLabel={isNotes ? "Notas" : "Documentos"}
         onBack={() => go()}
         onDelete={() =>
           startTransition(async () => {
@@ -72,19 +80,22 @@ export function DocsView({
         <Button
           onClick={() =>
             startTransition(async () => {
-              const id = await createDocAction(brandId);
+              const id = isNotes
+                ? await createNoteAction()
+                : await createDocAction(brandId);
               if (id) go(id);
             })
           }
         >
-          Novo documento
+          {isNotes ? "Nova nota" : "Novo documento"}
         </Button>
       </div>
 
       {docs.length === 0 ? (
         <p className="text-muted py-12 text-center text-sm">
-          Nenhum documento ainda. Crie o primeiro para começar a base de
-          conhecimento desta marca.
+          {isNotes
+            ? "Nenhuma nota ainda. Crie a primeira — só você vê suas notas."
+            : "Nenhum documento ainda. Crie o primeiro para começar a base de conhecimento desta marca."}
         </p>
       ) : (
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,11 +125,13 @@ export function DocsView({
 function DocEditor({
   doc,
   pending,
+  backLabel,
   onBack,
   onDelete,
 }: {
   doc: Doc;
   pending: boolean;
+  backLabel: string;
   onBack: () => void;
   onDelete: () => void;
 }) {
@@ -142,10 +155,10 @@ function DocEditor({
               strokeLinejoin="round"
             />
           </svg>
-          Documentos
+          {backLabel}
         </button>
         <Button variant="danger" size="sm" disabled={pending} onClick={onDelete}>
-          Remover documento
+          Remover
         </Button>
       </div>
 

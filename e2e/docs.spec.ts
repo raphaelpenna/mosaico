@@ -57,3 +57,20 @@ test("navega para docs pela sidebar mantendo a marca ativa", async ({
     page.getByRole("heading", { name: "Base de conhecimento" }),
   ).toBeVisible();
 });
+
+test("minhas notas: lista a nota semente e cria uma nova", async ({ page }) => {
+  await page.goto("/notes", { waitUntil: "networkidle" });
+  await expect(
+    page.getByRole("heading", { name: "Minhas notas" }),
+  ).toBeVisible();
+  await expect(page.getByText("Minhas anotações da semana")).toBeVisible();
+
+  await page.getByRole("button", { name: "Nova nota" }).click();
+  await expect(page).toHaveURL(/\/notes\?doc=/);
+  const title = `Nota e2e ${Date.now()}`;
+  const input = page.getByRole("textbox", { name: "Título do documento" });
+  await input.fill(title);
+  await input.blur();
+  await page.getByRole("button", { name: "Notas" }).click();
+  await expect(page.getByText(title, { exact: true })).toBeVisible();
+});

@@ -12,12 +12,28 @@ import type { Block } from "@/types";
  * client passa só intenção; nunca o escopo.
  */
 
+// Um doc pode aparecer em /docs (marca) ou /notes (pessoal); editar/remover
+// revalida ambas para a lista não ficar defasada.
+function revalidateDocSurfaces() {
+  revalidatePath("/docs");
+  revalidatePath("/notes");
+}
+
 export async function createDocAction(brandId: string): Promise<string | null> {
   if (!brandId) return null;
   const { scope } = await getSession();
   const doc = createDoc(brandId, scope);
   if (!doc) return null;
   revalidatePath("/docs");
+  return doc.id;
+}
+
+/** Cria uma nota pessoal (sem marca). */
+export async function createNoteAction(): Promise<string | null> {
+  const { scope } = await getSession();
+  const doc = createDoc(null, scope);
+  if (!doc) return null;
+  revalidatePath("/notes");
   return doc.id;
 }
 
@@ -28,7 +44,7 @@ export async function updateDocTitleAction(
   if (!id) return;
   const { scope } = await getSession();
   updateDoc(id, { title: String(title) }, scope);
-  revalidatePath("/docs");
+  revalidateDocSurfaces();
 }
 
 export async function updateDocIconAction(
@@ -38,7 +54,7 @@ export async function updateDocIconAction(
   if (!id) return;
   const { scope } = await getSession();
   updateDoc(id, { icon: [...String(icon)].slice(0, 2).join("") }, scope);
-  revalidatePath("/docs");
+  revalidateDocSurfaces();
 }
 
 export async function updateDocBlocksAction(
@@ -48,12 +64,12 @@ export async function updateDocBlocksAction(
   if (!id) return;
   const { scope } = await getSession();
   updateDoc(id, { blocks: sanitizeBlocks(blocks) }, scope);
-  revalidatePath("/docs");
+  revalidateDocSurfaces();
 }
 
 export async function deleteDocAction(id: string): Promise<void> {
   if (!id) return;
   const { scope } = await getSession();
   deleteDoc(id, scope);
-  revalidatePath("/docs");
+  revalidateDocSurfaces();
 }
