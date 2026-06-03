@@ -85,6 +85,10 @@ export interface Task {
   title: string;
   status: TaskStatus;
   priority: TaskPriority;
+  /** ícone (emoji) da tarefa */
+  icon?: string;
+  /** capa (cor hex) da tarefa */
+  cover?: string;
   /** prazo no formato ISO "YYYY-MM-DD" (sem hora); ausente = sem prazo */
   dueDate?: string;
   /** id do responsavel (ver lib/people); ausente = nao atribuida */
@@ -129,6 +133,8 @@ export interface TaskPatch {
   title?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  icon?: string;
+  cover?: string;
   dueDate?: string | null;
   assigneeId?: string | null;
   labelIds?: string[];

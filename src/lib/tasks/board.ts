@@ -46,6 +46,8 @@ export type BoardAction =
 export function applyPatch(t: Task, patch: TaskPatch): Task {
   const next: Task = { ...t };
   if (patch.title !== undefined) next.title = patch.title;
+  if (patch.icon !== undefined) next.icon = patch.icon || undefined;
+  if (patch.cover !== undefined) next.cover = patch.cover || undefined;
   if (patch.status !== undefined) next.status = patch.status;
   if (patch.priority !== undefined) next.priority = patch.priority;
   if (patch.labelIds !== undefined) next.labelIds = patch.labelIds;

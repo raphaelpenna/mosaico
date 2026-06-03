@@ -50,6 +50,13 @@ function sanitize(patch: TaskPatch): TaskPatch {
   const p: TaskPatch = {};
   if (typeof patch.title === "string" && patch.title.trim())
     p.title = patch.title;
+  if (typeof patch.icon === "string")
+    p.icon = [...patch.icon].slice(0, 2).join(""); // 1 emoji (até 2 codepoints)
+  if (typeof patch.cover === "string")
+    p.cover =
+      patch.cover === "" || /^#[0-9a-fA-F]{6}$/.test(patch.cover)
+        ? patch.cover
+        : "";
   if (patch.status && VALID_STATUS.includes(patch.status))
     p.status = patch.status;
   if (patch.priority && VALID_PRIORITY.includes(patch.priority))

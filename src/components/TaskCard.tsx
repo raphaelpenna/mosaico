@@ -74,7 +74,10 @@ export function TaskCard({
         {/* Conteúdo: no mobile vira duas linhas (título em cima, metadados
             embaixo); no desktop fica tudo numa linha só. */}
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-          <TaskTitle id={task.id} title={task.title} done={done} />
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            {task.icon && <span className="shrink-0 text-sm">{task.icon}</span>}
+            <TaskTitle id={task.id} title={task.title} done={done} />
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <LabelChips labelIds={task.labelIds} className="flex" />

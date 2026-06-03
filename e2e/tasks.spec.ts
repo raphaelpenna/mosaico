@@ -108,6 +108,17 @@ test("painel de detalhe abre (propriedades) e fecha no Esc", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("ícone: definir um emoji na tarefa pelo painel", async ({ page }) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Abrir detalhes" }).first().click();
+  const panel = page.getByRole("dialog");
+  await panel.getByRole("button", { name: "Ícone" }).click();
+  await page.getByRole("option", { name: "🚀" }).click();
+  await expect(panel.getByRole("button", { name: "Ícone" })).toContainText(
+    "🚀",
+  );
+});
+
 test("template: criar tarefa a partir de 'Nova campanha'", async ({ page }) => {
   await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Usar template" }).click();

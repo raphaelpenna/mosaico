@@ -36,6 +36,8 @@ function seedTasks(): Task[] {
       assigneeId: "u-stub",
       labelIds: ["loja", "produto"],
       brandId: "farm",
+      icon: "🛍️",
+      cover: "#e8552d",
     }, // MOCK
     {
       title: "Briefing da campanha de inverno",
@@ -185,6 +187,14 @@ export class MockTaskSource implements TaskSource {
       const clean = patch.title.trim();
       if (!clean) throw new Error("Título da tarefa vazio.");
       task.title = clean;
+    }
+    if (patch.icon !== undefined) {
+      if (patch.icon) task.icon = patch.icon;
+      else delete task.icon;
+    }
+    if (patch.cover !== undefined) {
+      if (patch.cover) task.cover = patch.cover;
+      else delete task.cover;
     }
     if (patch.status !== undefined) task.status = patch.status;
     if (patch.priority !== undefined) task.priority = patch.priority;

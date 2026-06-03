@@ -14,6 +14,7 @@ import { Subtasks } from "./Subtasks";
 import { BlockEditor } from "./BlockEditor";
 import { CustomFields } from "./CustomFields";
 import { Comments } from "./Comments";
+import { IconCover } from "./IconCover";
 
 /**
  * Painel direito (split view / slide-over) com o detalhe da tarefa — a base da
@@ -79,6 +80,14 @@ export function TaskPanel({ task }: { task: Task }) {
         aria-label={`Detalhe: ${task.title}`}
         className="bg-surface border-border anim-panel fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l shadow-xl sm:w-[420px]"
       >
+        {task.cover && (
+          <div
+            className="h-16 w-full shrink-0"
+            style={{ backgroundColor: task.cover }}
+            aria-hidden
+          />
+        )}
+
         {/* Header */}
         <div className="border-border flex items-center gap-2 border-b px-3 py-2.5">
           <SelectMenu
@@ -110,6 +119,7 @@ export function TaskPanel({ task }: { task: Task }) {
               </>
             }
           />
+          <IconCover task={task} />
           <button
             type="button"
             onClick={closeTask}
@@ -130,12 +140,15 @@ export function TaskPanel({ task }: { task: Task }) {
 
         {/* Corpo */}
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
-          <div className="text-lg font-semibold">
-            <TaskTitle
-              id={task.id}
-              title={task.title}
-              done={status.value === "done"}
-            />
+          <div className="flex items-center gap-2">
+            {task.icon && <span className="text-2xl">{task.icon}</span>}
+            <div className="flex-1 text-lg font-semibold">
+              <TaskTitle
+                id={task.id}
+                title={task.title}
+                done={status.value === "done"}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-2.5">
