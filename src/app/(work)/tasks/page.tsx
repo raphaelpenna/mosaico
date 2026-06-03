@@ -41,9 +41,12 @@ export default async function TasksPage({
   const total = tasks.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  // Referencia de "hoje" (ISO) resolvida no servidor — passada aos cards para a
-  // marcacao de prazo (atrasado/hoje) bater no SSR e no client.
-  const today = new Date().toISOString().slice(0, 10);
+  // Referencia de "hoje" (ISO) resolvida no servidor, no fuso da Azzas (São
+  // Paulo) — NÃO em UTC. Em UTC, perto da meia-noite, uma tarefa de hoje
+  // apareceria como "atrasada" e o calendário destacaria o dia errado.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date());
 
   const subtitle = mineView
     ? "Suas tarefas, em todas as marcas em escopo."

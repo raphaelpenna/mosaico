@@ -36,8 +36,32 @@ export function Subtasks({
     mutate(id, { subtasks: subtasks.filter((s) => s.id !== sid) });
   }
 
+  const total = subtasks.length;
+  const done = subtasks.filter((s) => s.done).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
   return (
     <div className="flex flex-col gap-1">
+      {total > 0 && (
+        <div className="mb-1 flex items-center gap-2">
+          <div
+            className="bg-surface-2 h-1.5 flex-1 overflow-hidden rounded-full"
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Progresso do checklist"
+          >
+            <div
+              className="bg-done h-full rounded-full transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className="text-faint text-xs tabular-nums">
+            {done}/{total}
+          </span>
+        </div>
+      )}
       {subtasks.map((s) => (
         <div key={s.id} className="group/sub flex items-center gap-2">
           <button

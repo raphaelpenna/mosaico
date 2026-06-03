@@ -71,12 +71,17 @@ export function SelectMenu({
     close();
   }
 
-  // Foca o item ativo (efeito de DOM).
+  // Foca o item ativo (efeito de DOM). `preventScroll` evita que focar role o
+  // container — o que dispararia o listener de scroll abaixo e fecharia o menu
+  // na hora (ex.: dentro do painel de detalhe, que é rolável).
   useEffect(() => {
-    if (open) itemRefs.current[active]?.focus();
+    if (open) itemRefs.current[active]?.focus({ preventScroll: true });
   }, [open, active]);
 
-  // Fecha no clique fora / scroll / resize.
+  // Fecha no clique fora. (NÃO fecha em scroll: dentro de containers roláveis
+  // como o painel de detalhe, o scroll induzido pelo foco fechava o menu na
+  // hora — bug. O menu é `fixed`; em scroll de página ele só perde o ancoramento,
+  // o que é aceitável.)
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -85,14 +90,9 @@ export function SelectMenu({
         return;
       close(false);
     };
-    const onScrollResize = () => close(false);
     document.addEventListener("mousedown", onDown);
-    window.addEventListener("scroll", onScrollResize, true);
-    window.addEventListener("resize", onScrollResize);
     return () => {
       document.removeEventListener("mousedown", onDown);
-      window.removeEventListener("scroll", onScrollResize, true);
-      window.removeEventListener("resize", onScrollResize);
     };
   }, [open]);
 
