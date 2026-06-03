@@ -12,6 +12,7 @@ function renderTitle() {
     labels: [],
     fields: [],
     people: [],
+    docs: [],
     mutate,
     remove: vi.fn(),
     selected: new Set(),

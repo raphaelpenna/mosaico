@@ -21,6 +21,13 @@ const EMOJIS = [
   "🧵", "👗", "👜", "🎨", "🏷️", "⭐", "🚀", "📝", "📷", "🗓️",
 ]; // prettier-ignore
 
+/** Tarefa que aponta para um doc (backlink), resolvida no servidor. */
+export interface DocBacklink {
+  taskId: string;
+  title: string;
+  brandId: string;
+}
+
 /**
  * Superfície de documentos: lista + editor. Serve tanto a base de conhecimento
  * da marca (`brandId` setado, `basePath="/docs"`) quanto as notas pessoais
@@ -33,11 +40,13 @@ export function DocsView({
   brandId,
   selectedId,
   basePath = "/docs",
+  backlinks = [],
 }: {
   docs: Doc[];
   brandId: string | null;
   selectedId?: string;
   basePath?: string;
+  backlinks?: DocBacklink[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -63,6 +72,7 @@ export function DocsView({
         doc={selected}
         pending={pending}
         backLabel={isNotes ? "Notas" : "Documentos"}
+        backlinks={backlinks}
         onBack={() => go()}
         onDelete={() =>
           startTransition(async () => {
@@ -126,12 +136,14 @@ function DocEditor({
   doc,
   pending,
   backLabel,
+  backlinks,
   onBack,
   onDelete,
 }: {
   doc: Doc;
   pending: boolean;
   backLabel: string;
+  backlinks: DocBacklink[];
   onBack: () => void;
   onDelete: () => void;
 }) {
@@ -196,6 +208,36 @@ function DocEditor({
         blocks={doc.blocks}
         onChange={(b: Block[]) => updateDocBlocksAction(doc.id, b)}
       />
+
+      {backlinks.length > 0 && (
+        <div className="border-border flex flex-col gap-2 border-t pt-4">
+          <span className="text-faint text-xs font-semibold tracking-wide uppercase">
+            Vinculado em {backlinks.length} tarefa
+            {backlinks.length === 1 ? "" : "s"}
+          </span>
+          <ul className="flex flex-col gap-1">
+            {backlinks.map((b) => (
+              <li key={b.taskId}>
+                <a
+                  href={`/tasks?brand=${b.brandId}&task=${b.taskId}`}
+                  className="text-muted hover:bg-surface-2 hover:text-fg flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                >
+                  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
+                    <path
+                      d="M6.5 9.5l3-3M7 4.5l.7-.7a2.5 2.5 0 0 1 3.5 3.5l-.7.7M9 11.5l-.7.7a2.5 2.5 0 0 1-3.5-3.5l.7-.7"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="truncate">{b.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

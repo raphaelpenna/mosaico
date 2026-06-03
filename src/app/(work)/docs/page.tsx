@@ -1,7 +1,8 @@
 import { getSession } from "@/lib/auth/session";
 import { resolveScopedBrand, scopedBrands } from "@/lib/brands/scope";
 import { listDocs } from "@/lib/docs";
-import { DocsView } from "@/components/DocsView";
+import { getTaskSource } from "@/lib/tasks";
+import { DocsView, type DocBacklink } from "@/components/DocsView";
 
 /**
  * Base de conhecimento por marca. Tudo no servidor: sessão -> escopo -> marca
@@ -22,6 +23,15 @@ export default async function DocsPage({
   const activeBrand = resolveScopedBrand(scope, brand) ?? brands[0];
   const docs = activeBrand ? listDocs(scope, activeBrand.id) : [];
 
+  // Backlinks do doc aberto: tarefas da mesma marca que o vinculam (tarefa→doc).
+  let backlinks: DocBacklink[] = [];
+  if (doc && activeBrand && docs.some((d) => d.id === doc)) {
+    const tasks = await getTaskSource().listTasks(scope, activeBrand.id);
+    backlinks = tasks
+      .filter((t) => t.linkedDocIds.includes(doc))
+      .map((t) => ({ taskId: t.id, title: t.title, brandId: t.brandId }));
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-screen-2xl flex-1 flex-col gap-6 px-6 py-8">
       <header className="flex flex-col gap-0.5">
@@ -41,6 +51,7 @@ export default async function DocsPage({
           docs={docs}
           brandId={activeBrand.id}
           selectedId={doc}
+          backlinks={backlinks}
         />
       )}
     </div>

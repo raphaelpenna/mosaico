@@ -10,6 +10,7 @@ import { AssigneePicker } from "./AssigneePicker";
 import { DuePicker } from "./DuePicker";
 import { PriorityPicker } from "./PriorityPicker";
 import { LabelEditor } from "./LabelEditor";
+import { DocLinks } from "./DocLinks";
 import { Subtasks } from "./Subtasks";
 import { BlockEditor } from "./BlockEditor";
 import { CustomFields } from "./CustomFields";
@@ -169,6 +170,15 @@ export function TaskPanel({ task }: { task: Task }) {
           </div>
 
           <CustomFields task={task} />
+
+          <div className="flex flex-col gap-1.5">
+            <FieldLabel>Documentos</FieldLabel>
+            <DocLinks
+              id={task.id}
+              brandId={task.brandId}
+              linkedDocIds={task.linkedDocIds}
+            />
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <FieldLabel>Conteúdo</FieldLabel>

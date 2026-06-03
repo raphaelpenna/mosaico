@@ -103,6 +103,8 @@ export interface Task {
   customFields: Record<string, CustomFieldValue>;
   /** comentários (append-only; autor/data definidos no servidor) */
   comments: Comment[];
+  /** ids de documentos vinculados (da mesma marca — ver lib/docs) */
+  linkedDocIds: string[];
   /** descricao curta (legado; o corpo rico vive em `blocks`) */
   description?: string;
   /** marca a que a tarefa pertence — escopada/validada no servidor */
@@ -141,5 +143,6 @@ export interface TaskPatch {
   subtasks?: Subtask[];
   blocks?: Block[];
   customFields?: Record<string, CustomFieldValue>;
+  linkedDocIds?: string[];
   description?: string;
 }

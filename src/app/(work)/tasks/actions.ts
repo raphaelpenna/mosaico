@@ -61,6 +61,10 @@ function sanitize(patch: TaskPatch): TaskPatch {
   if (Array.isArray(patch.labelIds))
     p.labelIds = patch.labelIds.filter(isLabel);
   if (Array.isArray(patch.blocks)) p.blocks = sanitizeBlocks(patch.blocks);
+  if (Array.isArray(patch.linkedDocIds))
+    p.linkedDocIds = [
+      ...new Set(patch.linkedDocIds.filter((x) => typeof x === "string")),
+    ];
   if (typeof patch.description === "string") p.description = patch.description;
   if (Array.isArray(patch.subtasks))
     p.subtasks = patch.subtasks

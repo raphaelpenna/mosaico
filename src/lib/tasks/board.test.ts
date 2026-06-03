@@ -19,6 +19,7 @@ function task(over: Partial<Task> = {}): Task {
     blocks: [],
     customFields: {},
     comments: [],
+    linkedDocIds: [],
     brandId: "farm",
     createdBy: "u-stub",
     ...over,

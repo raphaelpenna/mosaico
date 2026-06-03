@@ -4,6 +4,7 @@ import { resolveScopedBrand, scopedBrands } from "@/lib/brands/scope";
 import { listLabels } from "@/lib/labels";
 import { listFields } from "@/lib/fields";
 import { listPeople } from "@/lib/people";
+import { listDocRefs } from "@/lib/docs";
 import { templatesForBrand } from "@/lib/templates";
 import { AddTask } from "@/components/AddTask";
 import { TemplatePicker } from "@/components/TemplatePicker";
@@ -110,6 +111,7 @@ export default async function TasksPage({
         labels={listLabels()}
         fields={listFields()}
         people={listPeople()}
+        docs={listDocRefs(scope)}
       />
     </div>
   );

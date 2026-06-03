@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { FieldDef, Label, Person, TaskPatch } from "@/types";
+import type { DocRef } from "@/lib/docs";
 
 /**
  * Contexto do board: ponto unico de mutacao para os controles de cada linha.
@@ -17,6 +18,8 @@ export interface TaskBoardCtx {
   fields: FieldDef[];
   /** catálogo de pessoas (do servidor) */
   people: Person[];
+  /** catálogo leve de docs de marca em escopo (para vincular tarefa↔doc) */
+  docs: DocRef[];
   /** aplica um patch parcial a uma tarefa (otimista + servidor) */
   mutate: (id: string, patch: TaskPatch) => void;
   /** remove uma tarefa (otimista + servidor) com toast de desfazer */

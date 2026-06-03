@@ -80,6 +80,30 @@ export function listNotes(scope: AccessScope): Doc[] {
     .map(clone);
 }
 
+/** Referência leve a um doc (id/título/ícone/marca) — para vincular/exibir. */
+export interface DocRef {
+  id: string;
+  title: string;
+  icon?: string;
+  brandId?: string;
+}
+
+/**
+ * Catálogo leve de docs de marca em escopo, para o picker de vínculos da tarefa
+ * (a UI filtra pela marca da tarefa). Notas pessoais não entram — vínculo é só
+ * tarefa↔doc de marca.
+ */
+export function listDocRefs(scope: AccessScope): DocRef[] {
+  return docs
+    .filter(
+      (d) =>
+        d.createdBy === scope.userId &&
+        d.brandId &&
+        scope.allowedBrandIds.includes(d.brandId),
+    )
+    .map((d) => ({ id: d.id, title: d.title, icon: d.icon, brandId: d.brandId }));
+}
+
 export function getDoc(id: string, scope: AccessScope): Doc | undefined {
   const d = accessible(id, scope);
   return d ? clone(d) : undefined;

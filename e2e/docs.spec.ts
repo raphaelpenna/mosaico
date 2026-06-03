@@ -58,6 +58,40 @@ test("navega para docs pela sidebar mantendo a marca ativa", async ({
   ).toBeVisible();
 });
 
+test("backlink: doc mostra a tarefa que o vincula e o deep-link abre o painel", async ({
+  page,
+}) => {
+  await page.goto("/docs?brand=farm", { waitUntil: "networkidle" });
+  await page.getByText("Guideline de marca — inverno").click();
+  // A tarefa flagship é semeada vinculada a este doc.
+  await expect(page.getByText(/Vinculado em/)).toBeVisible();
+  const link = page.getByRole("link", {
+    name: /Planejar reposição da loja flagship/,
+  });
+  await expect(link).toBeVisible();
+  await link.click();
+  // Deep-link abre o painel da tarefa apontada.
+  await expect(page).toHaveURL(/\/tasks\?brand=farm&task=/);
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("vincula um documento à tarefa pelo painel (chip aparece)", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  const row = page
+    .locator("li", { hasText: "Briefing da campanha de inverno" })
+    .first();
+  await row.getByRole("button", { name: "Abrir detalhes" }).click();
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByText("Documentos")).toBeVisible();
+  await panel.getByRole("button", { name: "Vincular documento" }).click();
+  await page.getByRole("option", { name: /Guideline de marca/ }).click();
+  await expect(
+    panel.getByRole("link", { name: /Guideline de marca/ }),
+  ).toBeVisible();
+});
+
 test("minhas notas: lista a nota semente e cria uma nova", async ({ page }) => {
   await page.goto("/notes", { waitUntil: "networkidle" });
   await expect(

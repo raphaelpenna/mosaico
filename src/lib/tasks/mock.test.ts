@@ -47,7 +47,17 @@ describe("MockTaskSource", () => {
     expect(t.priority).toBe("medium");
     expect(t.labelIds).toEqual([]);
     expect(t.subtasks).toEqual([]);
+    expect(t.linkedDocIds).toEqual([]);
     expect(t.brandId).toBe("farm");
+  });
+
+  it("updateTask vincula/desvincula documentos (linkedDocIds)", async () => {
+    const t = await ts.createTask({ title: "Vincular", brandId: "farm" }, scope);
+    const r = await ts.updateTask(t.id, { linkedDocIds: ["d1", "d1"] }, scope);
+    // sanitize dedup é da action; o port persiste o que recebe (cópia isolada).
+    expect(r?.linkedDocIds).toContain("d1");
+    const r2 = await ts.updateTask(t.id, { linkedDocIds: [] }, scope);
+    expect(r2?.linkedDocIds).toEqual([]);
   });
 
   it("respeita campos iniciais do quick-add (prioridade/prazo/responsável/labels)", async () => {

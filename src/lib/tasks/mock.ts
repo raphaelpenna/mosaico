@@ -25,7 +25,13 @@ function seedTasks(): Task[] {
   const seed: Array<
     Omit<
       Task,
-      "id" | "createdBy" | "subtasks" | "blocks" | "customFields" | "comments"
+      | "id"
+      | "createdBy"
+      | "subtasks"
+      | "blocks"
+      | "customFields"
+      | "comments"
+      | "linkedDocIds"
     >
   > = [
     {
@@ -98,16 +104,21 @@ function seedTasks(): Task[] {
       brandId: "fabula",
     }, // MOCK
   ];
-  return seed.map((t) => ({
+  const built = seed.map((t) => ({
     ...t,
     labelIds: [...t.labelIds],
     subtasks: [],
     blocks: [],
     customFields: {},
     comments: [],
+    linkedDocIds: [] as string[],
     id: nextId(),
     createdBy: SEED_OWNER,
   }));
+  // MOCK: vincula a tarefa flagship (seed[0]) ao guideline da Farm — o doc
+  // semente "d1" de lib/docs — para o backlink já aparecer no demo.
+  built[0].linkedDocIds = ["d1"];
+  return built;
 }
 
 // Estado modulo-level: vive enquanto o processo do servidor vive.
@@ -141,6 +152,7 @@ export class MockTaskSource implements TaskSource {
         blocks: [...t.blocks],
         customFields: { ...t.customFields },
         comments: [...t.comments],
+        linkedDocIds: [...t.linkedDocIds],
       }));
   }
 
@@ -161,6 +173,7 @@ export class MockTaskSource implements TaskSource {
       blocks: [],
       customFields: {},
       comments: [],
+      linkedDocIds: [],
       brandId: input.brandId,
       createdBy: scope.userId,
     };
@@ -172,6 +185,7 @@ export class MockTaskSource implements TaskSource {
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
       comments: [...task.comments],
+      linkedDocIds: [...task.linkedDocIds],
     };
   }
 
@@ -203,6 +217,8 @@ export class MockTaskSource implements TaskSource {
     if (patch.blocks !== undefined) task.blocks = [...patch.blocks];
     if (patch.customFields !== undefined)
       task.customFields = { ...patch.customFields };
+    if (patch.linkedDocIds !== undefined)
+      task.linkedDocIds = [...patch.linkedDocIds];
     if (patch.description !== undefined) task.description = patch.description;
 
     // null LIMPA o campo; string define; undefined nao mexe.
@@ -222,6 +238,7 @@ export class MockTaskSource implements TaskSource {
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
       comments: [...task.comments],
+      linkedDocIds: [...task.linkedDocIds],
     };
   }
 
@@ -270,6 +287,7 @@ export class MockTaskSource implements TaskSource {
       blocks: [...task.blocks],
       customFields: { ...task.customFields },
       comments: [...task.comments],
+      linkedDocIds: [...task.linkedDocIds],
     };
   }
 }

@@ -35,9 +35,10 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 
 **P2 — Profundidade & diferenciação**
 
-- 🟡 **Base de conhecimento por marca + Minhas notas** — documentos por marca
-  (`/docs`, escopo dono + marca) e notas pessoais (`/notes`, escopo só do dono),
-  mesmo editor de blocos das tarefas. _Falta: link bidirecional tarefa↔documento._
+- ✅ **Base de conhecimento por marca + Minhas notas** — documentos por marca
+  (`/docs`, escopo dono + marca), notas pessoais (`/notes`, escopo só do dono) e
+  **link bidirecional tarefa↔documento** (vínculo no painel + backlinks no doc,
+  com deep-link `?task=`). Mesmo editor de blocos em tarefa, doc e nota.
 - ⬜ Visões **Timeline/Gantt**, **Galeria**, **Carga de trabalho**.
 - ⬜ **Fórmulas, rollups e relações**.
 - ⬜ Integrações: **Slack** + **dados Azzas/BigQuery**.

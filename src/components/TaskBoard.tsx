@@ -17,6 +17,7 @@ import type {
   TaskPriority,
   TaskStatus,
 } from "@/types";
+import type { DocRef } from "@/lib/docs";
 import {
   PRIORITY_META,
   STATUS_GROUPS,
@@ -50,6 +51,7 @@ export function TaskBoard({
   labels = [],
   fields = [],
   people = [],
+  docs = [],
 }: {
   tasks: Task[];
   today: string;
@@ -58,6 +60,7 @@ export function TaskBoard({
   labels?: Label[];
   fields?: FieldDef[];
   people?: Person[];
+  docs?: DocRef[];
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
@@ -121,7 +124,25 @@ export function TaskBoard({
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(
     null,
   );
-  const [openId, setOpenId] = useState<string | null>(null);
+  // Deep-link de backlink (doc → /tasks?brand=X&task=Y): abre o painel da tarefa
+  // apontada. Lido de useSearchParams (isomórfico — sem mismatch de hidratação).
+  const [openId, setOpenId] = useState<string | null>(
+    () => params.get("task") ?? null,
+  );
+
+  // Ao fechar, tira o ?task= da URL (sem re-render RSC) para não reabrir no reload.
+  function closeTask() {
+    setOpenId(null);
+    const p = new URLSearchParams(window.location.search);
+    if (!p.has("task")) return;
+    p.delete("task");
+    const qs = p.toString();
+    window.history.replaceState(
+      null,
+      "",
+      qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+    );
+  }
 
   // ---- mutações otimistas --------------------------------------------------
   function mutate(id: string, patch: TaskPatch) {
@@ -247,6 +268,7 @@ export function TaskBoard({
     labels,
     fields,
     people,
+    docs,
     mutate,
     remove,
     selected,
@@ -254,7 +276,7 @@ export function TaskBoard({
     selecting: selected.size > 0,
     openId,
     openTask: (id: string) => setOpenId(id),
-    closeTask: () => setOpenId(null),
+    closeTask,
   };
 
   const openTask = openId ? optimistic.find((t) => t.id === openId) : null;
