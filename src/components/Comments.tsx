@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Task } from "@/types";
-import { PEOPLE, getPerson, initials } from "@/lib/people";
+import type { Person, Task } from "@/types";
+import { initials } from "@/lib/people";
 import { addCommentAction } from "@/app/(work)/tasks/actions";
+import { useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
 
 /**
@@ -19,9 +20,9 @@ const dtf = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-function matchPerson(token: string) {
+function matchPerson(people: Person[], token: string) {
   const t = token.toLowerCase();
-  return PEOPLE.find(
+  return people.find(
     (p) =>
       p.id.toLowerCase() === t ||
       p.name
@@ -31,10 +32,10 @@ function matchPerson(token: string) {
   );
 }
 
-function renderText(text: string) {
+function renderText(people: Person[], text: string) {
   return text.split(/(@\w+)/g).map((part, i) => {
     if (part.startsWith("@")) {
-      const person = matchPerson(part.slice(1));
+      const person = matchPerson(people, part.slice(1));
       if (person)
         return (
           <span key={i} className="text-accent font-medium">
@@ -55,6 +56,7 @@ function Avatar({ name }: { name: string }) {
 }
 
 export function Comments({ task }: { task: Task }) {
+  const { people } = useTaskBoard();
   const [text, setText] = useState("");
   const [, start] = useTransition();
 
@@ -70,7 +72,7 @@ export function Comments({ task }: { task: Task }) {
       {task.comments.length > 0 && (
         <ul className="flex flex-col gap-3">
           {task.comments.map((c) => {
-            const author = getPerson(c.authorId);
+            const author = people.find((p) => p.id === c.authorId);
             const name = author?.name ?? c.authorId;
             return (
               <li key={c.id} className="flex gap-2">
@@ -83,7 +85,7 @@ export function Comments({ task }: { task: Task }) {
                     </span>
                   </div>
                   <p className="text-fg text-sm whitespace-pre-wrap">
-                    {renderText(c.text)}
+                    {renderText(people, c.text)}
                   </p>
                 </div>
               </li>

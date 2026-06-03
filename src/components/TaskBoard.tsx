@@ -11,12 +11,12 @@ import { useSearchParams } from "next/navigation";
 import type {
   FieldDef,
   Label,
+  Person,
   Task,
   TaskPatch,
   TaskPriority,
   TaskStatus,
 } from "@/types";
-import { PEOPLE } from "@/lib/people";
 import {
   PRIORITY_META,
   STATUS_GROUPS,
@@ -49,6 +49,7 @@ export function TaskBoard({
   brands = [],
   labels = [],
   fields = [],
+  people = [],
 }: {
   tasks: Task[];
   today: string;
@@ -56,6 +57,7 @@ export function TaskBoard({
   brands?: { id: string; name: string }[];
   labels?: Label[];
   fields?: FieldDef[];
+  people?: Person[];
 }) {
   const [optimistic, apply] = useOptimistic(tasks, boardReducer);
 
@@ -244,6 +246,7 @@ export function TaskBoard({
     today,
     labels,
     fields,
+    people,
     mutate,
     remove,
     selected,
@@ -282,6 +285,7 @@ export function TaskBoard({
     brands,
     labels,
     today,
+    people,
   }).filter((g) => g.items.length > 0);
 
   return (
@@ -325,7 +329,7 @@ export function TaskBoard({
           >
             <option value="">Todos</option>
             <option value="__none">Sem responsável</option>
-            {PEOPLE.map((p) => (
+            {people.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -503,7 +507,7 @@ export function TaskBoard({
             >
               <option value="">Responsável…</option>
               <option value="__none">Ninguém</option>
-              {PEOPLE.map((p) => (
+              {people.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>

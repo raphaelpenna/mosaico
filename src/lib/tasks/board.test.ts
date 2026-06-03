@@ -191,7 +191,9 @@ describe("buildGroups", () => {
   });
 
   it("agrupa por responsável incluindo 'sem responsável'", () => {
-    const g = buildGroups(tasks, "assignee");
+    const g = buildGroups(tasks, "assignee", {
+      people: [{ id: "ana", name: "Ana" }],
+    });
     const none = g.find((x) => x.key === "__none")!;
     expect(none.items.map((t) => t.id)).toEqual(["2"]);
     const ana = g.find((x) => x.key === "ana")!;

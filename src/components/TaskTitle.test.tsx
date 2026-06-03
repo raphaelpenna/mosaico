@@ -11,6 +11,7 @@ function renderTitle() {
     today: "2026-06-01",
     labels: [],
     fields: [],
+    people: [],
     mutate,
     remove: vi.fn(),
     selected: new Set(),

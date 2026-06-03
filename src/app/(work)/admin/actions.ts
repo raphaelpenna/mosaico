@@ -21,6 +21,7 @@ import {
   updateTemplate,
 } from "@/lib/templates";
 import { isLabel } from "@/lib/labels";
+import { createPerson, deletePerson, updatePerson } from "@/lib/people";
 import type { TaskPriority } from "@/types";
 
 /**
@@ -177,5 +178,30 @@ export async function updateTemplateAction(
 export async function deleteTemplateAction(id: string): Promise<void> {
   if (!id || !(await assertAdmin())) return;
   deleteTemplate(id);
+  revalidatePath("/", "layout");
+}
+
+// ---- Usuários -------------------------------------------------------------
+
+export async function createUserAction(formData: FormData): Promise<void> {
+  if (!(await assertAdmin())) return;
+  const name = String(formData.get("name") ?? "");
+  if (!name.trim()) return;
+  createPerson({ name });
+  revalidatePath("/", "layout");
+}
+
+export async function updateUserAction(
+  id: string,
+  patch: { name?: string },
+): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  if (typeof patch.name === "string") updatePerson(id, { name: patch.name });
+  revalidatePath("/", "layout");
+}
+
+export async function deleteUserAction(id: string): Promise<void> {
+  if (!id || !(await assertAdmin())) return;
+  deletePerson(id);
   revalidatePath("/", "layout");
 }

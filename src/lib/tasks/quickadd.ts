@@ -1,5 +1,5 @@
 import type { TaskPriority } from "@/types";
-import { PEOPLE } from "@/lib/people";
+import { listPeople } from "@/lib/people";
 import { listLabels } from "@/lib/labels";
 
 /**
@@ -67,7 +67,7 @@ export function parseQuickAdd(raw: string, today: Date): ParsedQuickAdd {
       }
     }
     if (word.startsWith("@") && word.length > 1) {
-      const person = matchByPrefix(PEOPLE, word.slice(1));
+      const person = matchByPrefix(listPeople(), word.slice(1));
       if (person) {
         result.assigneeId = person.id;
         continue;

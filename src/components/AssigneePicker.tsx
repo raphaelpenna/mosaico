@@ -1,6 +1,6 @@
 "use client";
 
-import { PEOPLE, getPerson, initials } from "@/lib/people";
+import { initials } from "@/lib/people";
 import { useTaskBoard } from "./task-board-context";
 import { SelectMenu } from "./ui/SelectMenu";
 
@@ -31,8 +31,8 @@ export function AssigneePicker({
   id: string;
   assigneeId?: string;
 }) {
-  const { mutate } = useTaskBoard();
-  const person = getPerson(assigneeId);
+  const { mutate, people } = useTaskBoard();
+  const person = people.find((p) => p.id === assigneeId);
 
   return (
     <SelectMenu
@@ -47,7 +47,7 @@ export function AssigneePicker({
           label: "Ninguém",
           node: <span className="text-muted">Ninguém</span>,
         },
-        ...PEOPLE.map((p) => ({
+        ...people.map((p) => ({
           value: p.id,
           label: p.name,
           node: (

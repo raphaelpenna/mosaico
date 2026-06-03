@@ -182,6 +182,14 @@ test("campo customizado: definir 'Coleção' no painel da tarefa", async ({
   );
 });
 
+test("admin: cria um usuário e ele aparece no catálogo", async ({ page }) => {
+  await page.goto("/admin", { waitUntil: "networkidle" });
+  const name = `Pessoa ${Date.now()}`;
+  await page.getByRole("textbox", { name: "Nome do novo usuário" }).fill(name);
+  await page.getByRole("button", { name: "Adicionar usuário" }).click();
+  await expect(page.getByLabel(`Nome de ${name}`)).toHaveValue(name);
+});
+
 test("admin: cria uma marca e ela aparece no catálogo", async ({ page }) => {
   await page.goto("/admin", { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { name: "Admin" })).toBeVisible();

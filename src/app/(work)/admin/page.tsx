@@ -4,10 +4,12 @@ import { listBrands } from "@/lib/brands/store";
 import { listLabels } from "@/lib/labels";
 import { listFields } from "@/lib/fields";
 import { listTemplates } from "@/lib/templates";
+import { listPeople } from "@/lib/people";
 import { AdminBrands } from "@/components/AdminBrands";
 import { AdminLabels } from "@/components/AdminLabels";
 import { AdminFields } from "@/components/AdminFields";
 import { AdminTemplates } from "@/components/AdminTemplates";
+import { AdminUsers } from "@/components/AdminUsers";
 
 /**
  * Admin v1 — gestão de marcas/workspaces (CRUD). Acesso só para papel admin
@@ -21,6 +23,7 @@ export default async function AdminPage() {
   const labels = listLabels();
   const fields = listFields();
   const templates = listTemplates();
+  const people = listPeople();
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-8">
@@ -58,6 +61,13 @@ export default async function AdminPage() {
           Templates de tarefa ({templates.length})
         </h2>
         <AdminTemplates templates={templates} brands={brands} />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">
+          Usuários ({people.length})
+        </h2>
+        <AdminUsers people={people} />
       </section>
     </div>
   );

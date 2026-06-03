@@ -1,5 +1,4 @@
 import type { Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
-import { PEOPLE } from "@/lib/people";
 
 /**
  * Logica PURA do board — sem React, sem DOM. Vive aqui (e nao dentro do
@@ -134,6 +133,7 @@ export interface TaskGroup {
 interface GroupCtx {
   brands?: { id: string; name: string }[];
   labels?: { id: string; name: string }[];
+  people?: { id: string; name: string }[];
   today?: string;
 }
 
@@ -177,7 +177,7 @@ export function buildGroups(
     keysOf = (t) => [t.priority];
   } else if (groupBy === "assignee") {
     groups = [
-      ...PEOPLE.map((p) => ({ key: p.id, label: p.name })),
+      ...(ctx.people ?? []).map((p) => ({ key: p.id, label: p.name })),
       { key: "__none", label: "Sem responsável" },
     ];
     keysOf = (t) => [t.assigneeId ?? "__none"];
