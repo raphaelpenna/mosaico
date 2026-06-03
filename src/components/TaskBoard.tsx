@@ -30,6 +30,7 @@ import {
 import { TaskCard } from "./TaskCard";
 import { TaskTable } from "./TaskTable";
 import { CalendarView } from "./CalendarView";
+import { GalleryView } from "./GalleryView";
 import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
@@ -85,12 +86,17 @@ export function TaskBoard({
   const [groupBy, setGroupBy] = useState<GroupBy>(
     () => (params.get("group") as GroupBy) || defaultGroup,
   );
-  const [view, setView] = useState<"list" | "board" | "table" | "calendar">(
-    () => {
-      const v = params.get("view");
-      return v === "board" || v === "table" || v === "calendar" ? v : "list";
-    },
-  );
+  const [view, setView] = useState<
+    "list" | "board" | "table" | "calendar" | "gallery"
+  >(() => {
+    const v = params.get("view");
+    return v === "board" ||
+      v === "table" ||
+      v === "calendar" ||
+      v === "gallery"
+      ? v
+      : "list";
+  });
 
   // Sincroniza filtros/visão na URL SEM re-render do servidor (history, não
   // router) — assim o link é compartilhável mas a página (RSC) não re-roda a
@@ -229,7 +235,9 @@ export function TaskBoard({
             ? "table"
             : v === "table"
               ? "calendar"
-              : "list",
+              : v === "calendar"
+                ? "gallery"
+                : "list",
       );
     const onClear = () => {
       setQuery("");
@@ -411,6 +419,11 @@ export function TaskBoard({
               onClick={() => setView("calendar")}
               label="Calendário"
             />
+            <ViewButton
+              on={view === "gallery"}
+              onClick={() => setView("gallery")}
+              label="Galeria"
+            />
           </div>
         </div>
 
@@ -470,6 +483,8 @@ export function TaskBoard({
           <TaskTable tasks={filtered} />
         ) : view === "calendar" ? (
           <CalendarView tasks={filtered} />
+        ) : view === "gallery" ? (
+          <GalleryView tasks={filtered} />
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (

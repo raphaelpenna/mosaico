@@ -163,6 +163,19 @@ test("visão Calendário renderiza a grade do mês", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Próximo mês" })).toBeVisible();
 });
 
+test("visão Galeria renderiza cards e abre o painel ao clicar", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Galeria" }).click();
+  const card = page.getByRole("button", {
+    name: /Abrir detalhes: Briefing da campanha de inverno/,
+  });
+  await expect(card).toBeVisible();
+  await card.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
 test("visão Tabela mostra colunas, incluindo campo customizado", async ({
   page,
 }) => {
