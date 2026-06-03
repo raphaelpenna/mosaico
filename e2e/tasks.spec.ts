@@ -135,6 +135,15 @@ test("agrupar por label cria grupos por label", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Produto" })).toBeVisible();
 });
 
+test("agrupar por campo customizado (Coleção)", async ({ page }) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.waitForTimeout(400);
+  await page
+    .getByRole("combobox", { name: "Agrupar por" })
+    .selectOption("field:colecao");
+  await expect(page.getByRole("heading", { name: "Sem valor" })).toBeVisible();
+});
+
 test("comentário: adicionar no painel e ver com @menção", async ({ page }) => {
   await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Abrir detalhes" }).first().click();

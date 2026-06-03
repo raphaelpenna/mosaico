@@ -237,6 +237,30 @@ describe("buildGroups", () => {
     ]);
   });
 
+  it("agrupa por campo customizado (select) incluindo 'sem valor'", () => {
+    const ftasks = [
+      task({ id: "a", customFields: { colecao: "Inverno" } }),
+      task({ id: "b", customFields: { colecao: "Verão" } }),
+      task({ id: "c", customFields: {} }),
+    ];
+    const g = buildGroups(ftasks, "field:colecao", {
+      fields: [
+        {
+          id: "colecao",
+          name: "Coleção",
+          type: "select" as const,
+          options: ["Inverno", "Verão"],
+        },
+      ],
+    });
+    expect(g.find((x) => x.key === "Inverno")!.items.map((t) => t.id)).toEqual([
+      "a",
+    ]);
+    expect(g.find((x) => x.key === "__none")!.items.map((t) => t.id)).toEqual([
+      "c",
+    ]);
+  });
+
   it("agrupa por prazo em baldes relativos a hoje", () => {
     const today = "2026-06-10";
     const dtasks = [

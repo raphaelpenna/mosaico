@@ -1,4 +1,10 @@
-import type { Task, TaskPatch, TaskPriority, TaskStatus } from "@/types";
+import type {
+  FieldDef,
+  Task,
+  TaskPatch,
+  TaskPriority,
+  TaskStatus,
+} from "@/types";
 
 /**
  * Logica PURA do board — sem React, sem DOM. Vive aqui (e nao dentro do
@@ -122,7 +128,8 @@ export type GroupBy =
   | "assignee"
   | "brand"
   | "label"
-  | "due";
+  | "due"
+  | `field:${string}`;
 
 export interface TaskGroup {
   key: string;
@@ -134,6 +141,7 @@ interface GroupCtx {
   brands?: { id: string; name: string }[];
   labels?: { id: string; name: string }[];
   people?: { id: string; name: string }[];
+  fields?: FieldDef[];
   today?: string;
 }
 
@@ -172,7 +180,19 @@ export function buildGroups(
 ): TaskGroup[] {
   let groups: { key: string; label: string }[];
   let keysOf: (t: Task) => string[];
-  if (groupBy === "priority") {
+  if (groupBy.startsWith("field:")) {
+    const fid = groupBy.slice(6);
+    const def = (ctx.fields ?? []).find((f) => f.id === fid);
+    groups = [
+      ...(def?.options ?? []).map((o) => ({ key: o, label: o })),
+      { key: "__none", label: "Sem valor" },
+    ];
+    keysOf = (t) => {
+      const v = t.customFields[fid];
+      if (Array.isArray(v)) return v.length ? v : ["__none"];
+      return v ? [v] : ["__none"];
+    };
+  } else if (groupBy === "priority") {
     groups = PRIORITY_META.map((p) => ({ key: p.value, label: p.label }));
     keysOf = (t) => [t.priority];
   } else if (groupBy === "assignee") {

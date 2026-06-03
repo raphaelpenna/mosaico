@@ -266,6 +266,11 @@ export function TaskBoard({
     { value: "label", label: "Label" },
     { value: "due", label: "Prazo" },
     ...(groupByBrand ? [{ value: "brand" as GroupBy, label: "Marca" }] : []),
+    ...fields
+      .filter(
+        (f) => !f.brandId && (f.type === "select" || f.type === "multiselect"),
+      )
+      .map((f) => ({ value: `field:${f.id}` as GroupBy, label: f.name })),
   ];
 
   if (tasks.length === 0) {
@@ -286,6 +291,7 @@ export function TaskBoard({
     labels,
     today,
     people,
+    fields,
   }).filter((g) => g.items.length > 0);
 
   return (
