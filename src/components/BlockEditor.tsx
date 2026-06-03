@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Block, BlockType } from "@/types";
-import { useTaskBoard } from "./task-board-context";
 
 /**
- * Editor de blocos do corpo da tarefa (a "página"). Minimal e sem dependências:
+ * Editor de blocos (corpo de tarefa OU de documento). Desacoplado: persiste via
+ * `onChange(blocks)` — o caller decide onde salvar. Minimal e sem dependências:
  * cada bloco é um textarea auto-ajustável. Enter cria parágrafo; Backspace no
  * início de bloco vazio remove; atalhos markdown no espaço transformam o tipo
  * (`# `/`## ` título, `[] ` tarefa, `- ` lista, `> ` citação); `---`+Enter vira
@@ -28,13 +28,12 @@ const MD: Record<string, () => Partial<Block> & { type: BlockType }> = {
 };
 
 export function BlockEditor({
-  id,
   blocks: initial,
+  onChange,
 }: {
-  id: string;
   blocks: Block[];
+  onChange: (blocks: Block[]) => void;
 }) {
-  const { mutate } = useTaskBoard();
   const [blocks, setBlocks] = useState<Block[]>(
     initial.length ? initial : [paragraph()],
   );
@@ -55,13 +54,13 @@ export function BlockEditor({
 
   function persist(next: Block[]) {
     setBlocks(next);
-    mutate(id, { blocks: next });
+    onChange(next);
   }
   function setLocal(next: Block[]) {
     setBlocks(next);
   }
   function commit() {
-    mutate(id, { blocks });
+    onChange(blocks);
   }
   function patchBlock(bid: string, patch: Partial<Block>, save = false) {
     const next = blocks.map((b) => (b.id === bid ? { ...b, ...patch } : b));

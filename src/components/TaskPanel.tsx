@@ -172,7 +172,10 @@ export function TaskPanel({ task }: { task: Task }) {
 
           <div className="flex flex-col gap-1.5">
             <FieldLabel>Conteúdo</FieldLabel>
-            <BlockEditor id={task.id} blocks={task.blocks} />
+            <BlockEditor
+              blocks={task.blocks}
+              onChange={(b) => mutate(task.id, { blocks: b })}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">

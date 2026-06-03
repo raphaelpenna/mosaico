@@ -72,7 +72,11 @@ export function Sidebar({
   const params = useSearchParams();
   const pathname = usePathname();
   const onTasks = pathname === "/tasks" || pathname === "/";
-  const active = onTasks ? params.get("brand") || defaultBrandId : "";
+  const onDocs = pathname.startsWith("/docs");
+  // A marca ativa destaca em ambas as superfícies (tarefas e docs).
+  const active = onTasks || onDocs ? params.get("brand") || defaultBrandId : "";
+  // Links de marca seguem a superfície atual (trocar de marca não muda a tela).
+  const brandBase = onDocs ? "/docs" : "/tasks";
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -116,7 +120,7 @@ export function Sidebar({
           {brands.map((b) => (
             <NavLink
               key={b.id}
-              href={`/tasks?brand=${b.id}`}
+              href={`${brandBase}?brand=${b.id}`}
               active={active === b.id}
               collapsed={collapsed}
               title={b.name}
@@ -170,6 +174,25 @@ export function Sidebar({
             }
           >
             Minhas tarefas
+          </NavLink>
+          <NavLink
+            href={`/docs?brand=${active && active !== "all" && active !== "mine" ? active : defaultBrandId}`}
+            active={onDocs}
+            collapsed={collapsed}
+            title="Base de conhecimento"
+            icon={
+              <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden>
+                <path
+                  d="M3 2.5h6.5a1.5 1.5 0 0 1 1.5 1.5v9.5H4.5A1.5 1.5 0 0 1 3 12V2.5Z M11 4l2 .5V13l-2-.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          >
+            Base de conhecimento
           </NavLink>
         </div>
 
