@@ -223,3 +223,69 @@ export function buildGroups(
     items: tasks.filter((t) => keysOf(t).includes(g.key)).sort(sortTasks),
   }));
 }
+
+// ---- carga de trabalho (agregação por responsável) -------------------------
+
+export interface WorkloadRow {
+  /** id do responsável, ou null para "Sem responsável" */
+  assigneeId: string | null;
+  name: string;
+  total: number;
+  todo: number;
+  doing: number;
+  done: number;
+  /** abertas (não-feitas) com prazo anterior a `today` */
+  overdue: number;
+  /** contagem por prioridade entre as ABERTAS (não-feitas) */
+  byPriority: Record<TaskPriority, number>;
+}
+
+/**
+ * Agrega tarefas por responsável para a visão Carga de trabalho. Inclui só quem
+ * tem ao menos uma tarefa (+ "Sem responsável" se houver). Ordena por abertas
+ * (todo+doing) desc, depois total desc, depois nome. PURA — testável em node.
+ */
+export function buildWorkload(
+  tasks: Task[],
+  people: { id: string; name: string }[],
+  today: string,
+): WorkloadRow[] {
+  const nameOf = new Map(people.map((p) => [p.id, p.name]));
+  const rows = new Map<string | null, WorkloadRow>();
+  const blank = (): Record<TaskPriority, number> => ({
+    urgent: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+  });
+
+  for (const t of tasks) {
+    const key = t.assigneeId ?? null;
+    let row = rows.get(key);
+    if (!row) {
+      row = {
+        assigneeId: key,
+        name: key ? (nameOf.get(key) ?? key) : "Sem responsável",
+        total: 0,
+        todo: 0,
+        doing: 0,
+        done: 0,
+        overdue: 0,
+        byPriority: blank(),
+      };
+      rows.set(key, row);
+    }
+    row.total += 1;
+    row[t.status] += 1;
+    if (t.status !== "done") {
+      row.byPriority[t.priority] += 1;
+      if (t.dueDate && t.dueDate < today) row.overdue += 1;
+    }
+  }
+
+  const open = (r: WorkloadRow) => r.todo + r.doing;
+  return [...rows.values()].sort(
+    (a, b) =>
+      open(b) - open(a) || b.total - a.total || a.name.localeCompare(b.name),
+  );
+}

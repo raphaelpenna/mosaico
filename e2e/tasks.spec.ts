@@ -176,6 +176,18 @@ test("visão Galeria renderiza cards e abre o painel ao clicar", async ({
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
+test("visão Carga de trabalho agrega tarefas por responsável", async ({
+  page,
+}) => {
+  await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Carga" }).click();
+  // A barra empilhada por status expõe um role=img com aria-label descritivo.
+  await expect(
+    page.getByRole("img", { name: /a fazer/ }).first(),
+  ).toBeVisible();
+  await expect(page.getByText(/aberta/).first()).toBeVisible();
+});
+
 test("visão Tabela mostra colunas, incluindo campo customizado", async ({
   page,
 }) => {

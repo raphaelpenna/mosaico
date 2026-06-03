@@ -4,6 +4,7 @@ import {
   applyPatch,
   boardReducer,
   buildGroups,
+  buildWorkload,
   filterTasks,
   sortTasks,
 } from "./board";
@@ -277,5 +278,44 @@ describe("buildGroups", () => {
     expect(byKey("today")).toEqual(["hoje"]);
     expect(byKey("month")).toEqual(["mes"]);
     expect(byKey("nodate")).toEqual(["sem"]);
+  });
+});
+
+describe("buildWorkload", () => {
+  const people = [
+    { id: "ana", name: "Ana" },
+    { id: "bruno", name: "Bruno" },
+  ];
+  const today = "2026-06-10";
+
+  it("agrega por responsável: total, status, atrasadas e prioridade (abertas)", () => {
+    const ts = [
+      task({ assigneeId: "ana", status: "todo", priority: "urgent", dueDate: "2026-06-01" }), // atrasada
+      task({ assigneeId: "ana", status: "doing", priority: "high" }),
+      task({ assigneeId: "ana", status: "done", priority: "low", dueDate: "2026-06-01" }), // feita não conta atraso/prio
+    ];
+    const [ana] = buildWorkload(ts, people, today);
+    expect(ana.name).toBe("Ana");
+    expect(ana.total).toBe(3);
+    expect(ana.todo).toBe(1);
+    expect(ana.doing).toBe(1);
+    expect(ana.done).toBe(1);
+    expect(ana.overdue).toBe(1);
+    expect(ana.byPriority.urgent).toBe(1);
+    expect(ana.byPriority.high).toBe(1);
+    expect(ana.byPriority.low).toBe(0); // a low é feita, não entra
+  });
+
+  it("inclui 'Sem responsável' e ordena por abertas desc", () => {
+    const ts = [
+      task({ assigneeId: "ana", status: "todo" }),
+      task({ assigneeId: "bruno", status: "todo" }),
+      task({ assigneeId: "bruno", status: "doing" }),
+      task({ status: "todo" }), // sem responsável
+    ];
+    const rows = buildWorkload(ts, people, today);
+    // Bruno (2 abertas) antes de Ana e do "Sem responsável" (1 cada).
+    expect(rows[0].name).toBe("Bruno");
+    expect(rows.some((r) => r.assigneeId === null && r.name === "Sem responsável")).toBe(true);
   });
 });

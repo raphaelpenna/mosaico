@@ -31,6 +31,7 @@ import { TaskCard } from "./TaskCard";
 import { TaskTable } from "./TaskTable";
 import { CalendarView } from "./CalendarView";
 import { GalleryView } from "./GalleryView";
+import { WorkloadView } from "./WorkloadView";
 import { TaskPanel } from "./TaskPanel";
 import { TaskBoardProvider, useTaskBoard } from "./task-board-context";
 import { Button } from "./ui/Button";
@@ -87,13 +88,14 @@ export function TaskBoard({
     () => (params.get("group") as GroupBy) || defaultGroup,
   );
   const [view, setView] = useState<
-    "list" | "board" | "table" | "calendar" | "gallery"
+    "list" | "board" | "table" | "calendar" | "gallery" | "workload"
   >(() => {
     const v = params.get("view");
     return v === "board" ||
       v === "table" ||
       v === "calendar" ||
-      v === "gallery"
+      v === "gallery" ||
+      v === "workload"
       ? v
       : "list";
   });
@@ -237,7 +239,9 @@ export function TaskBoard({
               ? "calendar"
               : v === "calendar"
                 ? "gallery"
-                : "list",
+                : v === "gallery"
+                  ? "workload"
+                  : "list",
       );
     const onClear = () => {
       setQuery("");
@@ -424,6 +428,11 @@ export function TaskBoard({
               onClick={() => setView("gallery")}
               label="Galeria"
             />
+            <ViewButton
+              on={view === "workload"}
+              onClick={() => setView("workload")}
+              label="Carga"
+            />
           </div>
         </div>
 
@@ -485,6 +494,8 @@ export function TaskBoard({
           <CalendarView tasks={filtered} />
         ) : view === "gallery" ? (
           <GalleryView tasks={filtered} />
+        ) : view === "workload" ? (
+          <WorkloadView tasks={filtered} />
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (
