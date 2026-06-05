@@ -64,7 +64,7 @@ test("backlink: doc mostra a tarefa que o vincula e o deep-link abre o painel", 
   await page.goto("/docs?brand=farm", { waitUntil: "networkidle" });
   await page.getByText("Guideline de marca — inverno").click();
   // A tarefa flagship é semeada vinculada a este doc.
-  await expect(page.getByText(/Vinculado em/)).toBeVisible();
+  await expect(page.getByText("Mencionado em")).toBeVisible();
   const link = page.getByRole("link", {
     name: /Planejar reposição da loja flagship/,
   });
@@ -75,20 +75,46 @@ test("backlink: doc mostra a tarefa que o vincula e o deep-link abre o painel", 
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
+test("wiki: documentos relacionados e 'Mencionado em' bidirecional", async ({
+  page,
+}) => {
+  await page.goto("/docs?brand=farm", { waitUntil: "networkidle" });
+  await page.getByText("Guideline de marca — inverno").click();
+  // Relação semeada: guideline → calendário.
+  await expect(page.getByText("Documentos relacionados")).toBeVisible();
+  const relChip = page
+    .getByRole("button", { name: /Calendário de coleções 2026/ })
+    .first();
+  await expect(relChip).toBeVisible();
+  await relChip.click();
+  // Agora no calendário: mencionado pelo guideline (lado inverso).
+  await expect(page.getByText("Mencionado em")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Guideline de marca/ }),
+  ).toBeVisible();
+});
+
 test("vincula um documento à tarefa pelo painel (chip aparece)", async ({
   page,
 }) => {
   await page.goto("/tasks?brand=farm", { waitUntil: "networkidle" });
-  const row = page
-    .locator("li", { hasText: "Briefing da campanha de inverno" })
-    .first();
+  // Tarefa nova (título único) garante o picker cheio em qualquer reexecução
+  // — o mock é compartilhado entre runs.
+  const title = `Link doc e2e ${Date.now()}`;
+  const input = page.getByPlaceholder(/Adicionar tarefa/);
+  await input.fill(title);
+  await input.press("Enter");
+  const row = page.locator("li", { hasText: title }).first();
   await row.getByRole("button", { name: "Abrir detalhes" }).click();
   const panel = page.getByRole("dialog");
   await expect(panel.getByText("Documentos")).toBeVisible();
   await panel.getByRole("button", { name: "Vincular documento" }).click();
-  await page.getByRole("option", { name: /Guideline de marca/ }).click();
+  await page
+    .getByRole("option", { name: /Calendário de coleções 2026/ })
+    .click();
+  // Um chip-link para o doc vinculado aparece no painel.
   await expect(
-    panel.getByRole("link", { name: /Guideline de marca/ }),
+    panel.getByRole("link", { name: /Calendário de coleções 2026/ }),
   ).toBeVisible();
 });
 

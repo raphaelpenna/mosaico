@@ -13,6 +13,7 @@ import {
   deleteDocAction,
   updateDocBlocksAction,
   updateDocIconAction,
+  updateDocLinksAction,
   updateDocTitleAction,
 } from "@/app/(work)/docs/actions";
 
@@ -70,9 +71,16 @@ export function DocsView({
     return (
       <DocEditor
         doc={selected}
+        collection={docs}
         pending={pending}
         backLabel={isNotes ? "Notas" : "Documentos"}
         backlinks={backlinks}
+        onOpen={(id) => go(id)}
+        onSetLinks={(ids) =>
+          startTransition(async () => {
+            await updateDocLinksAction(selected.id, ids);
+          })
+        }
         onBack={() => go()}
         onDelete={() =>
           startTransition(async () => {
@@ -134,20 +142,39 @@ export function DocsView({
 
 function DocEditor({
   doc,
+  collection,
   pending,
   backLabel,
   backlinks,
+  onOpen,
+  onSetLinks,
   onBack,
   onDelete,
 }: {
   doc: Doc;
+  collection: Doc[];
   pending: boolean;
   backLabel: string;
   backlinks: DocBacklink[];
+  onOpen: (id: string) => void;
+  onSetLinks: (ids: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
 }) {
   const [title, setTitle] = useState(doc.title);
+
+  // Wiki: relacionados (saída) e "mencionado em" (entrada) dentro da coleção.
+  const linkedSet = new Set(doc.linkedDocIds);
+  const related = collection.filter((d) => linkedSet.has(d.id));
+  const available = collection.filter(
+    (d) => d.id !== doc.id && !linkedSet.has(d.id),
+  );
+  const mentionedBy = collection.filter(
+    (d) => d.id !== doc.id && d.linkedDocIds.includes(doc.id),
+  );
+  const link = (id: string) => onSetLinks([...doc.linkedDocIds, id]);
+  const unlink = (id: string) =>
+    onSetLinks(doc.linkedDocIds.filter((x) => x !== id));
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
@@ -209,13 +236,91 @@ function DocEditor({
         onChange={(b: Block[]) => updateDocBlocksAction(doc.id, b)}
       />
 
-      {backlinks.length > 0 && (
+      {/* Wiki: documentos relacionados (saída) */}
+      <div className="border-border flex flex-col gap-2 border-t pt-4">
+        <span className="text-faint text-xs font-semibold tracking-wide uppercase">
+          Documentos relacionados
+        </span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {related.map((d) => (
+            <span
+              key={d.id}
+              className="border-border bg-surface-2 flex items-center gap-1 rounded-full border py-0.5 pr-1 pl-2 text-[11px] font-medium"
+            >
+              <button
+                type="button"
+                onClick={() => onOpen(d.id)}
+                className="hover:text-fg text-muted flex items-center gap-1"
+              >
+                <span aria-hidden>{d.icon ?? "📄"}</span>
+                <span className="max-w-40 truncate">{d.title}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => unlink(d.id)}
+                aria-label={`Desrelacionar ${d.title}`}
+                className="text-faint hover:text-fg flex h-4 w-4 items-center justify-center rounded-full"
+              >
+                <svg viewBox="0 0 16 16" className="h-3 w-3" aria-hidden>
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </span>
+          ))}
+          {available.length > 0 && (
+            <SelectMenu
+              ariaLabel="Relacionar documento"
+              align="start"
+              value=""
+              onChange={link}
+              options={available.map((d) => ({
+                value: d.id,
+                label: d.title,
+                node: (
+                  <span className="flex items-center gap-1.5">
+                    <span aria-hidden>{d.icon ?? "📄"}</span>
+                    {d.title}
+                  </span>
+                ),
+              }))}
+              triggerClassName="border-border text-muted hover:bg-surface-2 flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium"
+              trigger={<>+ Relacionar documento</>}
+            />
+          )}
+          {related.length === 0 && available.length === 0 && (
+            <span className="text-faint text-xs">
+              Nenhum outro documento nesta coleção ainda.
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Backlinks: mencionado por outros docs e por tarefas */}
+      {(mentionedBy.length > 0 || backlinks.length > 0) && (
         <div className="border-border flex flex-col gap-2 border-t pt-4">
           <span className="text-faint text-xs font-semibold tracking-wide uppercase">
-            Vinculado em {backlinks.length} tarefa
-            {backlinks.length === 1 ? "" : "s"}
+            Mencionado em
           </span>
           <ul className="flex flex-col gap-1">
+            {mentionedBy.map((d) => (
+              <li key={d.id}>
+                <button
+                  type="button"
+                  onClick={() => onOpen(d.id)}
+                  className="text-muted hover:bg-surface-2 hover:text-fg flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors"
+                >
+                  <span aria-hidden>{d.icon ?? "📄"}</span>
+                  <span className="truncate">{d.title}</span>
+                  <span className="text-faint ml-auto text-[11px]">doc</span>
+                </button>
+              </li>
+            ))}
             {backlinks.map((b) => (
               <li key={b.taskId}>
                 <a
@@ -232,6 +337,7 @@ function DocEditor({
                     />
                   </svg>
                   <span className="truncate">{b.title}</span>
+                  <span className="text-faint ml-auto text-[11px]">tarefa</span>
                 </a>
               </li>
             ))}

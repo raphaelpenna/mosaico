@@ -14,6 +14,8 @@ export interface Doc {
   title: string;
   icon?: string;
   blocks: Block[];
+  /** docs relacionados (mesma coleção: mesma marca, ou ambas notas) — wiki */
+  linkedDocIds: string[];
   createdBy: string;
 }
 
@@ -21,7 +23,7 @@ let seq = 0;
 const SEED_OWNER = "u-stub";
 
 function seedDocs(): Doc[] {
-  const seed: Array<Omit<Doc, "id" | "createdBy">> = [
+  const seed: Array<Omit<Doc, "id" | "createdBy" | "linkedDocIds">> = [
     {
       title: "Guideline de marca — inverno",
       icon: "📘",
@@ -33,6 +35,15 @@ function seedDocs(): Doc[] {
       ],
     },
     {
+      title: "Calendário de coleções 2026", // MOCK
+      icon: "🗓️",
+      brandId: "farm",
+      blocks: [
+        { id: "c1", type: "heading", level: 2, text: "Inverno" }, // MOCK
+        { id: "c2", type: "paragraph", text: "Lançamento em maio." }, // MOCK
+      ],
+    },
+    {
       title: "Minhas anotações da semana", // MOCK — nota pessoal (sem marca)
       icon: "📝",
       blocks: [
@@ -41,12 +52,16 @@ function seedDocs(): Doc[] {
       ],
     },
   ];
-  return seed.map((d) => ({
+  const built = seed.map((d) => ({
     ...d,
     blocks: d.blocks.map((b) => ({ ...b })),
+    linkedDocIds: [] as string[],
     id: `d${++seq}`,
     createdBy: SEED_OWNER,
   }));
+  // MOCK: relação wiki entre o guideline (d1) e o calendário (d2) da Farm.
+  built[0].linkedDocIds = [built[1].id];
+  return built;
 }
 
 const docs: Doc[] = seedDocs();
@@ -63,7 +78,11 @@ function accessible(id: string, scope: AccessScope): Doc | undefined {
 }
 
 function clone(d: Doc): Doc {
-  return { ...d, blocks: d.blocks.map((b) => ({ ...b })) };
+  return {
+    ...d,
+    blocks: d.blocks.map((b) => ({ ...b })),
+    linkedDocIds: [...d.linkedDocIds],
+  };
 }
 
 export function listDocs(scope: AccessScope, brandId: string): Doc[] {
@@ -120,6 +139,7 @@ export function createDoc(
     ...(brandId ? { brandId } : {}),
     title: "Sem título",
     blocks: [],
+    linkedDocIds: [],
     createdBy: scope.userId,
   };
   docs.push(doc);
@@ -128,7 +148,12 @@ export function createDoc(
 
 export function updateDoc(
   id: string,
-  patch: { title?: string; icon?: string; blocks?: Block[] },
+  patch: {
+    title?: string;
+    icon?: string;
+    blocks?: Block[];
+    linkedDocIds?: string[];
+  },
   scope: AccessScope,
 ): Doc | null {
   const d = accessible(id, scope);
@@ -139,6 +164,18 @@ export function updateDoc(
     else delete d.icon;
   }
   if (patch.blocks !== undefined) d.blocks = patch.blocks.map((b) => ({ ...b }));
+  if (patch.linkedDocIds !== undefined) {
+    // Só relaciona dentro da MESMA coleção (mesma marca, ou ambas notas) e
+    // nunca a si mesmo — integridade no servidor, não confia no client.
+    const sameCollection = (x: Doc) =>
+      x.createdBy === scope.userId && x.brandId === d.brandId && x.id !== d.id;
+    const valid = new Set(
+      docs.filter(sameCollection).map((x) => x.id),
+    );
+    d.linkedDocIds = [...new Set(patch.linkedDocIds)].filter((x) =>
+      valid.has(x),
+    );
+  }
   return clone(d);
 }
 

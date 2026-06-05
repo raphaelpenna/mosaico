@@ -67,6 +67,20 @@ export async function updateDocBlocksAction(
   revalidateDocSurfaces();
 }
 
+/** Relaciona documentos (wiki). O store valida coleção/escopo e exclui self. */
+export async function updateDocLinksAction(
+  id: string,
+  linkedDocIds: string[],
+): Promise<void> {
+  if (!id) return;
+  const { scope } = await getSession();
+  const ids = Array.isArray(linkedDocIds)
+    ? linkedDocIds.filter((x) => typeof x === "string")
+    : [];
+  updateDoc(id, { linkedDocIds: ids }, scope);
+  revalidateDocSurfaces();
+}
+
 export async function deleteDocAction(id: string): Promise<void> {
   if (!id) return;
   const { scope } = await getSession();

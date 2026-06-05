@@ -113,3 +113,24 @@ describe("notas pessoais (docs sem marca)", () => {
     expect(listNotes(other).some((x) => x.id === mine.id)).toBe(false);
   });
 });
+
+describe("relações wiki (linkedDocIds)", () => {
+  it("novo doc nasce sem relações", () => {
+    expect(createDoc("animale", owner)!.linkedDocIds).toEqual([]);
+  });
+
+  it("relaciona dentro da coleção; exclui self e doc de outra coleção", () => {
+    const a = createDoc("farm", owner)!;
+    const b = createDoc("farm", owner)!;
+    const note = createDoc(null, owner)!; // coleção diferente (pessoal)
+    const r = updateDoc(a.id, { linkedDocIds: [b.id, a.id, note.id] }, owner)!;
+    expect(r.linkedDocIds).toEqual([b.id]); // self e nota descartados
+  });
+
+  it("dedup de ids repetidos", () => {
+    const a = createDoc("farm", owner)!;
+    const b = createDoc("farm", owner)!;
+    const r = updateDoc(a.id, { linkedDocIds: [b.id, b.id] }, owner)!;
+    expect(r.linkedDocIds).toEqual([b.id]);
+  });
+});
