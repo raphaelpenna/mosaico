@@ -118,6 +118,37 @@ test("vincula um documento à tarefa pelo painel (chip aparece)", async ({
   ).toBeVisible();
 });
 
+test("busca filtra a lista de documentos", async ({ page }) => {
+  await page.goto("/docs?brand=farm", { waitUntil: "networkidle" });
+  await page
+    .getByRole("textbox", { name: "Buscar documentos" })
+    .fill("calendário");
+  await expect(page.getByText("Calendário de coleções 2026")).toBeVisible();
+  await expect(page.getByText("Guideline de marca — inverno")).toHaveCount(0);
+  await page.getByRole("button", { name: "Limpar busca" }).click();
+  await expect(page.getByText("Guideline de marca — inverno")).toBeVisible();
+});
+
+test("fixar um documento alterna o estado (round-trip no servidor)", async ({
+  page,
+}) => {
+  await page.goto("/docs?brand=farm", { waitUntil: "networkidle" });
+  // Doc novo (título único) — idempotente entre reexecuções.
+  await page.getByRole("button", { name: "Novo documento" }).click();
+  const title = `Org e2e ${Date.now()}`;
+  const input = page.getByRole("textbox", { name: "Título do documento" });
+  await input.fill(title);
+  await input.blur();
+  await page.getByRole("button", { name: "Documentos" }).click();
+
+  const card = page.locator("li", { hasText: title }).first();
+  await card.hover();
+  await card.getByRole("button", { name: `Fixar ${title}` }).click();
+  await expect(
+    page.getByRole("button", { name: `Desafixar ${title}` }),
+  ).toBeVisible();
+});
+
 test("minhas notas: lista a nota semente e cria uma nova", async ({ page }) => {
   await page.goto("/notes", { waitUntil: "networkidle" });
   await expect(

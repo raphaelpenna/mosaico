@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Doc } from "@/lib/docs";
+import { searchDocs, orderDocs, type DocSort } from "@/lib/docSort";
 import type { Block } from "@/types";
 import { BlockEditor } from "./BlockEditor";
 import { SelectMenu } from "./ui/SelectMenu";
@@ -11,6 +12,7 @@ import {
   createDocAction,
   createNoteAction,
   deleteDocAction,
+  setDocPinnedAction,
   updateDocBlocksAction,
   updateDocIconAction,
   updateDocLinksAction,
@@ -52,6 +54,8 @@ export function DocsView({
   const router = useRouter();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<DocSort>("recent");
   const isNotes = brandId === null;
 
   // Preserva os params (ex.: ?brand=) ao navegar entre lista e documento.
@@ -92,9 +96,17 @@ export function DocsView({
     );
   }
 
+  const visible = orderDocs(searchDocs(docs, query), sort);
+
+  function togglePin(d: Doc) {
+    startTransition(async () => {
+      await setDocPinnedAction(d.id, !d.pinned);
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <div>
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           onClick={() =>
             startTransition(async () => {
@@ -107,6 +119,48 @@ export function DocsView({
         >
           {isNotes ? "Nova nota" : "Novo documento"}
         </Button>
+
+        {docs.length > 0 && (
+          <>
+            <div className="border-border bg-surface focus-within:border-border-strong ml-auto flex min-w-44 items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors">
+              <svg viewBox="0 0 16 16" className="text-faint h-4 w-4" aria-hidden>
+                <path
+                  d="M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM14 14l-3.5-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={isNotes ? "Buscar notas…" : "Buscar documentos…"}
+                aria-label={isNotes ? "Buscar notas" : "Buscar documentos"}
+                className="placeholder:text-faint min-w-0 flex-1 bg-transparent text-sm outline-none"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Limpar busca"
+                  className="text-faint hover:text-fg text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as DocSort)}
+              aria-label="Ordenar"
+              className="border-border text-muted hover:bg-surface-2 cursor-pointer rounded-lg border bg-transparent px-2.5 py-1.5 text-sm transition-colors"
+            >
+              <option value="recent">Recentes</option>
+              <option value="alpha">A–Z</option>
+            </select>
+          </>
+        )}
       </div>
 
       {docs.length === 0 ? (
@@ -115,14 +169,18 @@ export function DocsView({
             ? "Nenhuma nota ainda. Crie a primeira — só você vê suas notas."
             : "Nenhum documento ainda. Crie o primeiro para começar a base de conhecimento desta marca."}
         </p>
+      ) : visible.length === 0 ? (
+        <p className="text-muted py-12 text-center text-sm">
+          Nada encontrado para “{query}”.
+        </p>
       ) : (
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {docs.map((d) => (
-            <li key={d.id}>
+          {visible.map((d) => (
+            <li key={d.id} className="group relative">
               <button
                 type="button"
                 onClick={() => go(d.id)}
-                className="border-border bg-surface hover:border-fg/20 hover:bg-surface-2 flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors"
+                className="border-border bg-surface hover:border-fg/20 hover:bg-surface-2 flex w-full items-center gap-3 rounded-lg border py-3 pr-10 pl-4 text-left transition-colors"
               >
                 <span className="text-xl">{d.icon ?? "📄"}</span>
                 <span className="min-w-0 flex-1">
@@ -131,6 +189,31 @@ export function DocsView({
                     {d.blocks.length} bloco{d.blocks.length === 1 ? "" : "s"}
                   </span>
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => togglePin(d)}
+                aria-label={d.pinned ? `Desafixar ${d.title}` : `Fixar ${d.title}`}
+                aria-pressed={d.pinned}
+                className={`absolute top-1/2 right-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition-colors ${
+                  d.pinned
+                    ? "text-accent"
+                    : "text-faint hover:bg-surface-2 hover:text-fg opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                }`}
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  className="h-4 w-4"
+                  fill={d.pinned ? "currentColor" : "none"}
+                  aria-hidden
+                >
+                  <path
+                    d="M8 1.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L3 5.8l4-.6z"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </li>
           ))}

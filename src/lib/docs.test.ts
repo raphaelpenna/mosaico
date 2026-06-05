@@ -6,6 +6,7 @@ import {
   getDoc,
   listDocs,
   listNotes,
+  setPinned,
   updateDoc,
 } from "./docs";
 
@@ -132,5 +133,28 @@ describe("relações wiki (linkedDocIds)", () => {
     const b = createDoc("farm", owner)!;
     const r = updateDoc(a.id, { linkedDocIds: [b.id, b.id] }, owner)!;
     expect(r.linkedDocIds).toEqual([b.id]);
+  });
+});
+
+describe("organização (fixar + updatedAt)", () => {
+  it("setPinned alterna o fixado sem mexer no updatedAt", () => {
+    const d = createDoc("farm", owner)!;
+    const ts = getDoc(d.id, owner)!.updatedAt;
+    const r = setPinned(d.id, true, owner)!;
+    expect(r.pinned).toBe(true);
+    expect(r.updatedAt).toBe(ts); // fixar não conta como edição
+    expect(setPinned(d.id, false, owner)!.pinned).toBe(false);
+  });
+
+  it("editar conteúdo carimba novo updatedAt", () => {
+    const d = createDoc("farm", owner)!;
+    const before = getDoc(d.id, owner)!.updatedAt;
+    const r = updateDoc(d.id, { title: "Editado" }, owner)!;
+    expect(r.updatedAt >= before).toBe(true);
+  });
+
+  it("não fixa doc fora do escopo", () => {
+    const d = createDoc("farm", owner)!;
+    expect(setPinned(d.id, true, other)).toBeNull();
   });
 });

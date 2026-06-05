@@ -38,8 +38,10 @@ Fases 1–7 abaixo seguem como base; o PRD reorganiza o que falta em **P0/P1/P2*
 - ✅ **Base de conhecimento por marca + Minhas notas** — documentos por marca
   (`/docs`, escopo dono + marca), notas pessoais (`/notes`, escopo só do dono),
   **link bidirecional tarefa↔documento** (vínculo no painel + backlinks no doc,
-  deep-link `?task=`) e **wiki doc↔doc** (documentos relacionados + "Mencionado
-  em" bidirecional, dentro da coleção). Mesmo editor de blocos em tarefa/doc/nota.
+  deep-link `?task=`), **wiki doc↔doc** (documentos relacionados + "Mencionado
+  em" bidirecional, dentro da coleção) e **busca + organização** (filtro por
+  título/conteúdo, ordenar recentes/A–Z, fixar no topo). Mesmo editor de blocos
+  em tarefa/doc/nota.
 - ✅ Visões completas: Lista · Quadro · Tabela · Calendário · **Galeria** ·
   **Carga de trabalho** · **Linha do tempo (Gantt)** — todas alternáveis na
   toolbar / `⌘K` e persistidas em `?view=`.

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
-import { createDoc, updateDoc, deleteDoc } from "@/lib/docs";
+import { createDoc, updateDoc, deleteDoc, setPinned } from "@/lib/docs";
 import { sanitizeBlocks } from "@/lib/blocks";
 import type { Block } from "@/types";
 
@@ -78,6 +78,16 @@ export async function updateDocLinksAction(
     ? linkedDocIds.filter((x) => typeof x === "string")
     : [];
   updateDoc(id, { linkedDocIds: ids }, scope);
+  revalidateDocSurfaces();
+}
+
+export async function setDocPinnedAction(
+  id: string,
+  pinned: boolean,
+): Promise<void> {
+  if (!id) return;
+  const { scope } = await getSession();
+  setPinned(id, Boolean(pinned), scope);
   revalidateDocSurfaces();
 }
 

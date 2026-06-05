@@ -16,14 +16,23 @@ export interface Doc {
   blocks: Block[];
   /** docs relacionados (mesma coleção: mesma marca, ou ambas notas) — wiki */
   linkedDocIds: string[];
+  /** ISO da última edição de conteúdo (ordenação "recentes") */
+  updatedAt: string;
+  /** fixado no topo da lista (organização) */
+  pinned: boolean;
   createdBy: string;
 }
 
 let seq = 0;
 const SEED_OWNER = "u-stub";
 
+// Carimbo fixo das sementes (determinístico p/ ordenação "recentes" no demo).
+const SEED_TS = "2026-05-01T12:00:00.000Z";
+
 function seedDocs(): Doc[] {
-  const seed: Array<Omit<Doc, "id" | "createdBy" | "linkedDocIds">> = [
+  const seed: Array<
+    Omit<Doc, "id" | "createdBy" | "linkedDocIds" | "updatedAt" | "pinned">
+  > = [
     {
       title: "Guideline de marca — inverno",
       icon: "📘",
@@ -52,10 +61,13 @@ function seedDocs(): Doc[] {
       ],
     },
   ];
-  const built = seed.map((d) => ({
+  const built = seed.map((d, i) => ({
     ...d,
     blocks: d.blocks.map((b) => ({ ...b })),
     linkedDocIds: [] as string[],
+    // Carimbos escalonados para a ordenação "recentes" ter o que mostrar.
+    updatedAt: new Date(Date.parse(SEED_TS) + i * 86400000).toISOString(),
+    pinned: false,
     id: `d${++seq}`,
     createdBy: SEED_OWNER,
   }));
@@ -83,6 +95,10 @@ function clone(d: Doc): Doc {
     blocks: d.blocks.map((b) => ({ ...b })),
     linkedDocIds: [...d.linkedDocIds],
   };
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
 }
 
 export function listDocs(scope: AccessScope, brandId: string): Doc[] {
@@ -140,6 +156,8 @@ export function createDoc(
     title: "Sem título",
     blocks: [],
     linkedDocIds: [],
+    updatedAt: nowIso(),
+    pinned: false,
     createdBy: scope.userId,
   };
   docs.push(doc);
@@ -158,6 +176,8 @@ export function updateDoc(
 ): Doc | null {
   const d = accessible(id, scope);
   if (!d) return null;
+  // Qualquer edição de conteúdo carimba updatedAt (ordenação "recentes").
+  d.updatedAt = nowIso();
   if (patch.title !== undefined) d.title = patch.title.trim() || "Sem título";
   if (patch.icon !== undefined) {
     if (patch.icon) d.icon = patch.icon;
@@ -176,6 +196,18 @@ export function updateDoc(
       valid.has(x),
     );
   }
+  return clone(d);
+}
+
+/** Fixa/desfixa um doc no topo da lista — não conta como edição (não toca updatedAt). */
+export function setPinned(
+  id: string,
+  pinned: boolean,
+  scope: AccessScope,
+): Doc | null {
+  const d = accessible(id, scope);
+  if (!d) return null;
+  d.pinned = pinned;
   return clone(d);
 }
 
